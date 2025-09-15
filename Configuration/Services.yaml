@@ -1,0 +1,32 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  W3code\W3cAiconnector\:
+    resource: '../Classes/*'
+    exclude:
+    - '../Classes/Domain/Model/*'
+
+  W3code\W3cAiconnector\Service\GeminiService:
+    public: true
+
+  W3code\W3cAiconnector\Service\OllamaService:
+    public: true
+
+  W3code\W3cAiconnector\Service\OpenAiService:
+    public: true
+
+  W3code\W3cAiconnector\Service\CustomService:
+    class: W3code\W3cAiconnector\Service\GeminiService 
+    public: true
+
+  W3code\W3cAiconnector\Service\AiConnectorFactory:
+    public: true
+    arguments:
+      $services:
+        gemini: '@W3code\W3cAiconnector\Service\GeminiService'
+        ollama: '@W3code\W3cAiconnector\Service\OllamaService'
+        openai: '@W3code\W3cAiconnector\Service\OpenAiService'
+      $customService: '@W3code\W3cAiconnector\Service\CustomService'

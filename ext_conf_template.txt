@@ -1,0 +1,17 @@
+# cat=general; type=options[gemini,openai,ollama,custom]; label=AI Provider: Select the AI provider to use.
+provider = gemini
+
+# cat=provider_gemini; type=string; label=Gemini API Key: Your Google Gemini API key.
+geminiApiKey = 
+
+# cat=provider_gemini; type=string; label=Gemini Model Name: The Gemini model to use.
+geminiModelName = gemini-2.0-flash
+
+# cat=provider_openai; type=string; label=OpenAI API Key: Your OpenAI API key.
+openAiApiKey = 
+
+# cat=provider_openai; type=string; label=OpenAI Model Name: The OpenAI model to use.
+openAiModelName = gpt-4o
+
+# cat=provider_ollama; type=string; label=Ollama Model Name: The Ollama model to use (e.g., llama3).
+ollamaModelName = llama3
