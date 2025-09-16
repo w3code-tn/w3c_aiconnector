@@ -18,6 +18,18 @@ services:
   W3code\W3cAiconnector\Service\OpenAiService:
     public: true
 
+  W3code\W3cAiconnector\Service\ClaudeService:
+    public: true
+
+  W3code\W3cAiconnector\Service\CohereService:
+    public: true
+
+  W3code\W3cAiconnector\Service\MistralService:
+    public: true
+
+  W3code\W3cAiconnector\Service\DeepLService:
+    public: true
+
   W3code\W3cAiconnector\Service\CustomService:
     class: W3code\W3cAiconnector\Service\GeminiService 
     public: true
@@ -29,4 +41,8 @@ services:
         gemini: '@W3code\W3cAiconnector\Service\GeminiService'
         ollama: '@W3code\W3cAiconnector\Service\OllamaService'
         openai: '@W3code\W3cAiconnector\Service\OpenAiService'
+        claude: '@W3code\W3cAiconnector\Service\ClaudeService'
+        cohere: '@W3code\W3cAiconnector\Service\CohereService'
+        mistral: '@W3code\W3cAiconnector\Service\MistralService'
+        deepl: '@W3code\W3cAiconnector\Service\DeepLService'
       $customService: '@W3code\W3cAiconnector\Service\CustomService'

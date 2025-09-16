@@ -10,36 +10,33 @@ use W3code\W3cAiconnector\Interface\AiConnectorInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class OllamaService implements AiConnectorInterface
+class CohereService implements AiConnectorInterface
 {
-    /**
-     * @var string L'URL de votre service Ollama
-     */
-    private const API_ENDPOINT = 'http://ollama:11434';
+    private const API_ENDPOINT = 'https://api.cohere.ai/v1/chat';
 
     public function process(string $prompt, array $options = []): ?string
     {
         $extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class)
             ->get('w3c_aiconnector');
 
-        $modelName = $extConf['ollamaModelName'] ?? 'llama3';
-        $endPoint = $extConf['ollamaEndPoint'] ?? self::API_ENDPOINT;
-
-        $client = new Client();
+        $apiKey = $extConf['cohereApiKey'] ?? '';
+        $modelName = $extConf['cohereModelName'] ?? 'command-r-plus';
 
         try {
-            $response = $client->post($endPoint . '/api/generate', [
+            $client = new Client();
+            $response = $client->post(self::API_ENDPOINT, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Content-Type' => 'application/json'
+                ],
                 'json' => [
                     'model' => $modelName,
-                    'prompt' => $prompt,
-                    'stream' => false
+                    'message' => $prompt,
                 ]
             ]);
             $body = json_decode((string)$response->getBody(), true);
-            return $body['response'] ?? null;
-
+            return $body['text'] ?? null;
         } catch (GuzzleException $e) {
-            $GLOBALS['BE_USER']->writelog(2, 0, 0, 0, 'Ollama error '.$e->getMessage(), "w3c_aiconnector");
             return null;
         }
     }

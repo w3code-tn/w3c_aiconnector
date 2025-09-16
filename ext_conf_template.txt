@@ -1,17 +1,41 @@
 # cat=general; type=options[gemini,openai,ollama,custom]; label=AI Provider: Select the AI provider to use.
 provider = gemini
 
-# cat=provider_gemini; type=string; label=Gemini API Key: Your Google Gemini API key.
+# cat=Gemini; type=string; label=Gemini API Key: Your Google Gemini API key.
 geminiApiKey = 
 
-# cat=provider_gemini; type=string; label=Gemini Model Name: The Gemini model to use.
+# cat=Gemini; type=string; label=Gemini Model Name: The Gemini model to use.
 geminiModelName = gemini-2.0-flash
 
-# cat=provider_openai; type=string; label=OpenAI API Key: Your OpenAI API key.
+# cat=OpenAi; type=string; label=OpenAI API Key: Your OpenAI API key.
 openAiApiKey = 
 
-# cat=provider_openai; type=string; label=OpenAI Model Name: The OpenAI model to use.
+# cat=OpenAi; type=string; label=OpenAI Model Name: The OpenAI model to use.
 openAiModelName = gpt-4o
 
-# cat=provider_ollama; type=string; label=Ollama Model Name: The Ollama model to use (e.g., llama3).
+# cat=Claude; type=string; label=OpenAI API Key: Your OpenAI API key.
+claudeApiKey = 
+
+# cat=Claude; type=string; label=OpenAI Model Name: The OpenAI model to use.
+claudeModelName = claude-3-opus-20240229
+
+# cat=Mistral; type=string; label=OpenAI API Key: Your OpenAI API key.
+mistralApiKey = 
+
+# cat=Mistral; type=string; label=OpenAI Model Name: The OpenAI model to use.
+mistralModelName = mistral-large-latest
+
+# cat=Cohere; type=string; label=Cohere API Key: Your Cohere API key.
+cohereApiKey = 
+
+# cat=Cohere; type=string; label=Cohere Model Name: The Cohere model to use.
+cohereModelName = command-r-plus
+
+# cat=DeepL; type=string; label=DeepL API Key: Your DeepL API key.
+deeplApiKey = 
+
+# cat=Ollama; type=string; label=Ollama Model Name: The Ollama model to use (e.g., llama3).
 ollamaModelName = llama3
+
+# cat=Ollama; type=string; label=Ollama endPoint Url: The endPoint Url to use.
+ollamaEndPoint = http://ollama:11434
