@@ -30,6 +30,9 @@ services:
   W3code\W3cAiconnector\Service\DeepLService:
     public: true
 
+  W3code\W3cAiconnector\Service\GoogleTranslateService:
+    public: true
+
   W3code\W3cAiconnector\Service\CustomService:
     class: W3code\W3cAiconnector\Service\GeminiService 
     public: true
@@ -45,4 +48,5 @@ services:
         cohere: '@W3code\W3cAiconnector\Service\CohereService'
         mistral: '@W3code\W3cAiconnector\Service\MistralService'
         deepl: '@W3code\W3cAiconnector\Service\DeepLService'
+        googletranslate: '@W3code\W3cAiconnector\Service\GoogleTranslateService'
       $customService: '@W3code\W3cAiconnector\Service\CustomService'

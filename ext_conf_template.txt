@@ -1,4 +1,4 @@
-# cat=general; type=options[gemini,openai,ollama,claude,mistral,cohere,deepl,custom]; label=AI Provider: Select the AI provider to use.
+# cat=general; type=options[gemini,openai,ollama,claude,mistral,cohere,deepl,googletranslate,custom]; label=AI Provider: Select the AI provider to use.
 provider = gemini
 
 # cat=Gemini; type=string; label=Gemini API Key: Your Google Gemini API key.
@@ -7,23 +7,110 @@ geminiApiKey =
 # cat=Gemini; type=string; label=Gemini Model Name: The Gemini model to use.
 geminiModelName = gemini-2.0-flash
 
+# cat=Gemini; type=boolean; label=Gemini Stream: Enable stream for Gemini API.
+geminiStream = 0
+
+# cat=Gemini; type=float; label=Gemini Temperature: The temperature for the Gemini model.
+geminiTemperature = 0.9
+
+# cat=Gemini; type=float; label=Gemini TopP: The topP for the Gemini model.
+geminiTopP = 0.95
+
+# cat=Gemini; type=int; label=Gemini TopK: The topK for the Gemini model.
+geminiTopK = 40
+
+# cat=Gemini; type=int; label=Gemini Candidate Count: The candidate count for the Gemini model.
+geminiCandidateCount = 1
+
+# cat=Gemini; type=int; label=Gemini Max Output Tokens: The max output tokens for the Gemini model.
+geminiMaxOutputTokens = 1024
+
+# cat=Gemini; type=string; label=Gemini Stop Sequences: The stop sequences for the Gemini model (comma separated).
+geminiStopSequences = 
+
 # cat=OpenAi; type=string; label=OpenAI API Key: Your OpenAI API key.
 openAiApiKey = 
 
 # cat=OpenAi; type=string; label=OpenAI Model Name: The OpenAI model to use.
 openAiModelName = gpt-4o
 
-# cat=Claude; type=string; label=OpenAI API Key: Your OpenAI API key.
+# cat=OpenAi; type=float; label=OpenAI Temperature: The temperature for the OpenAI model.
+openAiTemperature = 1.0
+
+# cat=OpenAi; type=float; label=OpenAI TopP: The topP for the OpenAI model.
+openAiTopP = 1.0
+
+# cat=OpenAi; type=int; label=OpenAI Max Tokens: The maximum number of tokens to generate.
+openAiMaxTokens = 1024
+
+# cat=OpenAi; type=string; label=OpenAI Stop: The stop sequences for the OpenAI model (comma separated).
+openAiStop = 
+
+# cat=OpenAi; type=boolean; label=OpenAI Stream: Enable stream for OpenAI API.
+openAiStream = 0
+
+# cat=OpenAi; type=float; label=OpenAI Presence Penalty: The presence penalty for the OpenAI model.
+openAiPresencePenalty = 0.0
+
+# cat=OpenAi; type=float; label=OpenAI Frequency Penalty: The frequency penalty for the OpenAI model.
+openAiFrequencyPenalty = 0.0
+
+# cat=Claude; type=string; label=Claude API Key: Your Claude API key.
 claudeApiKey = 
 
-# cat=Claude; type=string; label=OpenAI Model Name: The OpenAI model to use.
+# cat=Claude; type=string; label=Claude Model Name: The Claude model to use.
 claudeModelName = claude-3-opus-20240229
 
-# cat=Mistral; type=string; label=OpenAI API Key: Your OpenAI API key.
+# cat=Claude; type=string; label=Claude API Version: The Claude API version to use.
+claudeApiVersion = 2023-06-01
+
+# cat=Claude; type=int; label=Claude Max Tokens: The maximum number of tokens to generate.
+claudeMaxTokens = 1024
+
+# cat=Claude; type=string; label=Claude System Prompt: The system prompt for the Claude model. 
+claudeSystem = 
+
+# cat=Claude; type=string; label=Claude Stop Sequences: The stop sequences for the Claude model (comma separated).
+claudeStopSequences = 
+
+# cat=Claude; type=boolean; label=Claude Stream: Enable stream for Claude API.
+claudeStream = 0
+
+# cat=Claude; type=float; label=Claude Temperature: The temperature for the Claude model.
+claudeTemperature = 1.0
+
+# cat=Claude; type=float; label=Claude TopP: The topP for the Claude model.
+claudeTopP = 1.0
+
+# cat=Claude; type=int; label=Claude TopK: The topK for the Claude model.
+claudeTopK = 5
+
+# cat=Mistral; type=string; label=Mistral API Key: Your Mistral API key.
 mistralApiKey = 
 
-# cat=Mistral; type=string; label=OpenAI Model Name: The OpenAI model to use.
+# cat=Mistral; type=string; label=Mistral Model Name: The Mistral model to use.
 mistralModelName = mistral-large-latest
+
+# cat=Mistral; type=float; label=Mistral Temperature: The temperature for the Mistral model.
+mistralTemperature = 0.7
+
+# cat=Mistral; type=float; label=Mistral TopP: The topP for the Mistral model.
+mistralTopP = 1.0
+
+# cat=Mistral; type=int; label=Mistral Max Tokens: The maximum number of tokens to generate.
+mistralMaxTokens = 1024
+
+# cat=Mistral; type=string; label=Mistral Stop: The stop sequences for the Mistral model (comma separated).
+mistralStop = 
+
+# cat=Mistral; type=int; label=Mistral Random Seed: The random seed for the Mistral model.
+mistralRandomSeed = 0
+
+# cat=Mistral; type=boolean; label=Mistral Stream: Enable stream for Mistral API.
+mistralStream = 0
+
+# cat=Mistral; type=boolean; label=Mistral Safe Prompt: Enable safe prompt for Mistral API.
+mistralSafePrompt = 0
 
 # cat=Cohere; type=string; label=Cohere API Key: Your Cohere API key.
 cohereApiKey = 
@@ -31,11 +118,101 @@ cohereApiKey =
 # cat=Cohere; type=string; label=Cohere Model Name: The Cohere model to use.
 cohereModelName = command-r-plus
 
+# cat=Cohere; type=int; label=Cohere Max Tokens: The maximum number of tokens to generate.
+cohereMaxTokens = 1024
+
+# cat=Cohere; type=float; label=Cohere Temperature: The temperature for the Cohere model.
+cohereTemperature = 0.3
+
+# cat=Cohere; type=float; label=Cohere P: The P for the Cohere model.
+cohereP = 0.75
+
+# cat=Cohere; type=int; label=Cohere K: The K for the Cohere model.
+cohereK = 0
+
+# cat=Cohere; type=float; label=Cohere Frequency Penalty: The frequency penalty for the Cohere model.
+cohereFrequencyPenalty = 0.0
+
+# cat=Cohere; type=float; label=Cohere Presence Penalty: The presence penalty for the Cohere model.
+coherePresencePenalty = 0.0
+
+# cat=Cohere; type=string; label=Cohere Stop Sequences: The stop sequences for the Cohere model (comma separated).
+cohereStopSequences = 
+
+# cat=Cohere; type=boolean; label=Cohere Stream: Enable stream for Cohere API.
+cohereStream = 0
+
+# cat=Cohere; type=string; label=Cohere Preamble: The preamble for the Cohere model.
+coherePreamble = 
+
 # cat=DeepL; type=string; label=DeepL API Key: Your DeepL API key.
 deeplApiKey = 
+
+# cat=DeepL; type=string; label=DeepL Source Language: The source language for DeepL (optional).
+deeplSourceLang = 
+
+# cat=DeepL; type=options[off,on,nonewlines]; label=DeepL Split Sentences: How sentences should be split.
+deeplSplitSentences = on
+
+# cat=DeepL; type=boolean; label=DeepL Preserve Formatting: Preserve formatting in the translation.
+deeplPreserveFormatting = 0
+
+# cat=DeepL; type=options[less,more,default]; label=DeepL Formality: Desired formality for the translation.
+deeplFormality = default
+
+# cat=DeepL; type=string; label=DeepL Glossary ID: ID of a glossary to use.
+deeplGlossaryId = 
+
+# cat=DeepL; type=options[xml,html]; label=DeepL Tag Handling: Type of tags to handle.
+deeplTagHandling = 
+
+# cat=DeepL; type=boolean; label=DeepL Outline Detection: Detect XML structure.
+deeplOutlineDetection = 0
+
+# cat=DeepL; type=string; label=DeepL Non Splitting Tags: Comma-separated list of tags that should not be split.
+deeplNonSplittingTags = 
 
 # cat=Ollama; type=string; label=Ollama Model Name: The Ollama model to use (e.g., llama3).
 ollamaModelName = llama3
 
 # cat=Ollama; type=string; label=Ollama endPoint Url: The endPoint Url to use.
 ollamaEndPoint = http://ollama:11434
+
+# cat=Ollama; type=boolean; label=Ollama Stream: Enable stream for Ollama API.
+ollamaStream = 0
+
+# cat=Ollama; type=float; label=Ollama Temperature: The temperature for the Ollama model.
+ollamaTemperature = 0.8
+
+# cat=Ollama; type=float; label=Ollama TopP: The topP for the Ollama model.
+ollamaTopP = 0.9
+
+# cat=Ollama; type=int; label=Ollama Num Predict: The number of tokens to predict for the Ollama model.
+ollamaNumPredict = 1024
+
+# cat=Ollama; type=string; label=Ollama Stop: The stop sequences for the Ollama model (comma separated).
+ollamaStop = 
+
+# cat=Ollama; type=string; label=Ollama Format: The format for the Ollama model (e.g., json).
+ollamaFormat = 
+
+# cat=Ollama; type=string; label=Ollama System: The system prompt for the Ollama model.
+ollamaSystem = 
+
+# cat=GoogleTranslate; type=string; label=Google Translate API Key: Your Google Translate API key.
+googleTranslateApiKey = 
+
+# cat=GoogleTranslate; type=string; label=Google Translate Target Language: The target language for Google Translate.
+googleTranslateTargetLang = en
+
+# cat=GoogleTranslate; type=string; label=Google Translate Source Language: The source language for Google Translate (optional).
+googleTranslateSourceLang = 
+
+# cat=GoogleTranslate; type=options[html,text]; label=Google Translate Format: The format of the text to be translated.
+googleTranslateFormat = html
+
+# cat=GoogleTranslate; type=string; label=Google Translate Model: The model to use for translation (optional).
+googleTranslateModel = 
+
+# cat=GoogleTranslate; type=string; label=Google Translate Custom Model ID: The custom model ID to use for translation (optional).
+googleTranslateCid = 
