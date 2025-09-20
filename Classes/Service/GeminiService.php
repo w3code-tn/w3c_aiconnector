@@ -24,7 +24,8 @@ class GeminiService extends BaseService implements AiConnectorInterface
 
         $apiKey = $options['apiKey'] ?? $extConf['geminiApiKey'] ?? '';
         $model = $options['model'] ?? $extConf['geminiModelName'] ?? self::DEFAULT_GEMINI_MODEL;
-        $stream = $options['stream'] ?? (bool)($extConf['geminiStream'] ?? self::DEFAULT_GEMINI_STREAM);
+        $stream = $options['stream'] ?? ($extConf['geminiStream'] ?? self::DEFAULT_GEMINI_STREAM);
+        $stream = (bool)$stream;
 
         $generationConfig = [
             'temperature' => (float)($options['temperature'] ?? $extConf['geminiTemperature'] ?? self::DEFAULT_GEMINI_TEMPERATURE),
