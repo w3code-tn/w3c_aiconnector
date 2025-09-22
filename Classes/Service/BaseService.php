@@ -80,14 +80,7 @@ abstract class BaseService
     protected const DEFAULT_GEMINI_CANDIDATE_COUNT = 1;
     protected const DEFAULT_GEMINI_MAX_OUTPUT_TOKENS = 1024;
     protected const DEFAULT_GEMINI_STOP_SEQUENCES = [];
-
-
-    protected LoggerInterface $logger;
-
-    public function __construct(LogManagerInterface $logManager)
-    {
-        $this->logger = $logManager->getLogger(static::class);
-    }
+    protected const DEFAULT_STREAM_CHUNK_SIZE = 100;
 
     protected function maskApiKey(string $apiKey): string
     {
@@ -95,6 +88,18 @@ abstract class BaseService
             return str_repeat('*', strlen($apiKey));
         }
         return substr($apiKey, 0, 4) . str_repeat('*', strlen($apiKey) - 8) . substr($apiKey, -4);
+    }
+
+    protected function overrideParams(array $options, array $params): array
+    {
+        foreach ($options as $key => $value) {
+            if (array_key_exists($key, $params)) {
+                $params[$key] = $value;
+            } elseif (isset($params['generationConfig']) && array_key_exists($key, $params['generationConfig'])) {
+                $params['generationConfig'][$key] = $value;
+            }
+        }
+        return $params;
     }
 
     protected function maskErrorMessage(string $errorMessage, string $apiKey, bool $isUrlKey = true): string
@@ -123,7 +128,8 @@ abstract class BaseService
         string $apiKey,
         array $logOptions,
         ?string $model,
-        bool $isUrlKey = true
+        bool $isUrlKey = true,
+        $logger = null
     ): void {
         $errorMessage = $e->getMessage();
         $responseBody = null;
@@ -140,7 +146,7 @@ abstract class BaseService
         // Mask the API key in the original error message
         $errorMessage = $this->maskErrorMessage($errorMessage, $apiKey, $isUrlKey);
 
-        $this->logger->error(
+        $logger->error(
             $serviceName . ' error: ' . $errorMessage,
             [
                 'model' => $model,
@@ -156,13 +162,14 @@ abstract class BaseService
         string $apiKey,
         array $logOptions,
         ?string $model,
-        bool $isUrlKey = true
+        bool $isUrlKey = true,
+        $logger = null
     ): void {
         $errorMessage = $e->getMessage();
         // Mask the API key in the original error message
         $errorMessage = $this->maskErrorMessage($errorMessage, $apiKey, $isUrlKey);
 
-        $this->logger->error(
+        $logger->error(
             $serviceName . ' error: ' . $errorMessage,
             [
                 'model' => $model,
@@ -170,5 +177,17 @@ abstract class BaseService
                 'response' => 'No response body available.'
             ]
         );
+    }
+
+    function isMarkdownChunkSafe(string $chunk): bool
+    {
+        // Vérifie si le chunk se termine par une ligne complète
+        // (évite de couper au milieu d'un bloc code ou d'une liste)
+        // Bloc code triple backtick
+        $openCode = substr_count($chunk, '```') % 2 !== 0;
+        // Liste non terminée (commence par * ou - mais pas de saut de ligne)
+        $openList = preg_match('/^(\*|-)\s.*[^\n]$/m', $chunk);
+
+        return !$openCode && !$openList;
     }
 }

@@ -7,61 +7,93 @@ namespace W3code\W3cAiconnector\Service;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
+use Psr\Log\LoggerInterface;
+use TYPO3\CMS\Core\Log\LogManagerInterface;
 use W3code\W3cAiconnector\Interface\AiConnectorInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class GoogleTranslateService extends BaseService implements AiConnectorInterface
 {
-    public function process(string $prompt, array $options = []): ?string
+    private array $params = [];
+    protected LoggerInterface $logger;
+
+    public function __construct(LogManagerInterface $logManager)
     {
+        $this->logger = $logManager->getLogger(static::class);
         $extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class)
             ->get('w3c_aiconnector');
 
-        $apiKey = $options['apiKey'] ?? $extConf['googleTranslateApiKey'] ?? '';
-        $targetLang = $options['targetLang'] ?? $extConf['googleTranslateTargetLang'] ?? self::DEFAULT_GOOGLE_TRANSLATE_TARGET_LANG;
-        $sourceLang = $options['sourceLang'] ?? $extConf['googleTranslateSourceLang'] ?? self::DEFAULT_GOOGLE_TRANSLATE_SOURCE_LANG;
-        $format = $options['format'] ?? $extConf['googleTranslateFormat'] ?? self::DEFAULT_GOOGLE_TRANSLATE_FORMAT;
-        $model = $options['model'] ?? $extConf['googleTranslateModel'] ?? self::DEFAULT_GOOGLE_TRANSLATE_MODEL;
-        $cid = $options['cid'] ?? $extConf['googleTranslateCid'] ?? self::DEFAULT_GOOGLE_TRANSLATE_CID;
+        $this->params = [
+            'apiKey' => $extConf['googleTranslateApiKey'] ?? '',
+            'targetLang' => $extConf['googleTranslateTargetLang'] ?? self::DEFAULT_GOOGLE_TRANSLATE_TARGET_LANG,
+            'sourceLang' => $extConf['googleTranslateSourceLang'] ?? self::DEFAULT_GOOGLE_TRANSLATE_SOURCE_LANG,
+            'format' => $extConf['googleTranslateFormat'] ?? self::DEFAULT_GOOGLE_TRANSLATE_FORMAT,
+            'model' => $extConf['googleTranslateModel'] ?? self::DEFAULT_GOOGLE_TRANSLATE_MODEL,
+            'cid' => $extConf['googleTranslateCid'] ?? self::DEFAULT_GOOGLE_TRANSLATE_CID,
+        ];
+    }
+
+    public function process(string $prompt, array $options = []): ?string
+    {
+        $options = $this->overrideParams($options, $this->params);
 
         $logOptions = $options;
         if (isset($logOptions['apiKey'])) {
             $logOptions['apiKey'] = $this->maskApiKey($logOptions['apiKey']);
         }
-        $this->logger->info('Google Translate info: ', ['targetLang' => $targetLang, 'options' => $logOptions]);
+        $this->logger->info('Google Translate info: ', ['targetLang' => $options['targetLang'], 'options' => $logOptions]);
 
         try {
             $client = new Client();
             $requestBody = [
                 'q' => $prompt,
-                'target' => $targetLang,
+                'target' => $options['targetLang'],
             ];
 
-            if (!empty($sourceLang)) {
-                $requestBody['source'] = $sourceLang;
+            if (!empty($options['sourceLang'])) {
+                $requestBody['source'] = $options['sourceLang'];
             }
-            if (!empty($format)) {
-                $requestBody['format'] = $format;
+            if (!empty($options['format'])) {
+                $requestBody['format'] = $options['format'];
             }
-            if (!empty($model)) {
-                $requestBody['model'] = $model;
+            if (!empty($options['model'])) {
+                $requestBody['model'] = $options['model'];
             }
-            if (!empty($cid)) {
-                $requestBody['cid'] = $cid;
+            if (!empty($options['cid'])) {
+                $requestBody['cid'] = $options['cid'];
             }
 
-            $response = $client->post(self::DEFAULT_GOOGLE_TRANSLATE_API_ENDPOINT . '?key=' . $apiKey, [
+            $response = $client->post(self::DEFAULT_GOOGLE_TRANSLATE_API_ENDPOINT . '?key=' . $options['apiKey'], [
                 'json' => $requestBody
             ]);
             $body = json_decode((string)$response->getBody(), true);
             return $body['data']['translations'][0]['translatedText'] ?? null;
         } catch (RequestException $e) {
-            $this->handleServiceRequestException('Google Translate', $e, $apiKey, $logOptions, null, true);
+            $this->handleServiceRequestException('Google Translate', $e, $options['apiKey'], $logOptions, null, true);
             return null;
         } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('Google Translate', $e, $apiKey, $logOptions, null, true);
+            $this->handleServiceGuzzleException('Google Translate', $e, $options['apiKey'], $logOptions, null, true);
             return null;
+        }
+    }
+
+    public function streamProcess(string $prompt, array $options = []): \Generator
+    {
+        $result = $this->process($prompt, $options);
+        if ($result === null) {
+            yield '';
+            return;
+        }
+
+        // Découpe le texte en phrases ou en morceaux de 50 caractères
+        $chunkSize = 50;
+        $length = strlen($result);
+        for ($i = 0; $i < $length; $i += $chunkSize) {
+            yield mb_substr($result, $i, $chunkSize);
+            // Optionnel : flush pour forcer l’envoi
+            if (ob_get_level() > 0) ob_flush();
+            flush();
         }
     }
 }

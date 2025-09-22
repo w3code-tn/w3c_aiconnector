@@ -11,31 +11,49 @@ services:
 
   W3code\W3cAiconnector\Service\GeminiService:
     public: true
+    arguments:
+      $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
 
   W3code\W3cAiconnector\Service\OllamaService:
     public: true
+    arguments:
+      $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
 
   W3code\W3cAiconnector\Service\OpenAiService:
     public: true
+    arguments:
+      $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
 
   W3code\W3cAiconnector\Service\ClaudeService:
     public: true
+    arguments:
+      $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
 
   W3code\W3cAiconnector\Service\CohereService:
     public: true
+    arguments:
+      $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
 
   W3code\W3cAiconnector\Service\MistralService:
     public: true
+    arguments:
+      $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
 
   W3code\W3cAiconnector\Service\DeepLService:
     public: true
+    arguments:
+      $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
 
   W3code\W3cAiconnector\Service\GoogleTranslateService:
     public: true
+    arguments:
+      $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
 
   W3code\W3cAiconnector\Service\CustomService:
     class: W3code\W3cAiconnector\Service\GeminiService 
     public: true
+    arguments:
+      $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
 
   W3code\W3cAiconnector\Service\AiConnectorFactory:
     public: true
@@ -49,4 +67,4 @@ services:
         mistral: '@W3code\W3cAiconnector\Service\MistralService'
         deepl: '@W3code\W3cAiconnector\Service\DeepLService'
         googletranslate: '@W3code\W3cAiconnector\Service\GoogleTranslateService'
-      $customService: '@W3code\W3cAiconnector\Service\CustomService'
+        custom: '@W3code\W3cAiconnector\Service\CustomService'

@@ -7,68 +7,75 @@ namespace W3code\W3cAiconnector\Service;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
+use Psr\Log\LoggerInterface;
+use TYPO3\CMS\Core\Log\LogManagerInterface;
 use W3code\W3cAiconnector\Interface\AiConnectorInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class OpenAiService extends BaseService implements AiConnectorInterface
 {
-    public function process(string $prompt, array $options = []): ?string
+    private array $params = [];
+    protected LoggerInterface $logger;
+
+    public function __construct(LogManagerInterface $logManager)
     {
+        $this->logger = $logManager->getLogger(static::class);
         $extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class)
             ->get('w3c_aiconnector');
 
-        $apiKey = $options['apiKey'] ?? $extConf['openAiApiKey'] ?? '';
-        $model = $options['model'] ?? $extConf['openAiModelName'] ?? self::DEFAULT_OPENAI_MODEL;
-        $temperature = (float)($options['temperature'] ?? $extConf['openAiTemperature'] ?? self::DEFAULT_OPENAI_TEMPERATURE);
-        $topP = (float)($options['topP'] ?? $extConf['openAiTopP'] ?? self::DEFAULT_OPENAI_TOP_P);
-        $maxTokens = (int)($options['maxTokens'] ?? $extConf['openAiMaxTokens'] ?? self::DEFAULT_OPENAI_MAX_TOKENS);
-        $stop = $options['stop'] ?? ($extConf['openAiStop'] ? GeneralUtility::trimExplode(',', $extConf['openAiStop'], true) : self::DEFAULT_OPENAI_STOP);
-        $stream = (bool)($options['stream'] ?? $extConf['openAiStream'] ?? self::DEFAULT_OPENAI_STREAM);
-        $presencePenalty = (float)($options['presencePenalty'] ?? $extConf['openAiPresencePenalty'] ?? self::DEFAULT_OPENAI_PRESENCE_PENALTY);
-        $frequencyPenalty = (float)($options['frequencyPenalty'] ?? $extConf['openAiFrequencyPenalty'] ?? self::DEFAULT_OPENAI_FREQUENCY_PENALTY);
+        $this->params = [
+            'apiKey' => $extConf['openAiApiKey'] ?? '',
+            'model' => $extConf['openAiModelName'] ?? self::DEFAULT_OPENAI_MODEL,
+            'temperature' => (float)($extConf['openAiTemperature'] ?? self::DEFAULT_OPENAI_TEMPERATURE),
+            'topP' => (float)($extConf['openAiTopP'] ?? self::DEFAULT_OPENAI_TOP_P),
+            'maxTokens' => (int)($extConf['openAiMaxTokens'] ?? self::DEFAULT_OPENAI_MAX_TOKENS),
+            'stop' => $extConf['openAiStop'] ? GeneralUtility::trimExplode(',', $extConf['openAiStop'], true) : self::DEFAULT_OPENAI_STOP,
+            'stream' => (bool)($extConf['openAiStream'] ?? self::DEFAULT_OPENAI_STREAM),
+            'presencePenalty' => (float)($extConf['openAiPresencePenalty'] ?? self::DEFAULT_OPENAI_PRESENCE_PENALTY),
+            'frequencyPenalty' => (float)($extConf['openAiFrequencyPenalty'] ?? self::DEFAULT_OPENAI_FREQUENCY_PENALTY),
+            'chunkSize' => (int)($extConf['openAiChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
+        ];
+    }
+
+    public function process(string $prompt, array $options = []): ?string
+    {
+        $options = $this->overrideParams($options, $this->params);
 
         $logOptions = $options;
         if (isset($logOptions['apiKey'])) {
             $logOptions['apiKey'] = $this->maskApiKey($logOptions['apiKey']);
         }
         $this->logger->info('OpenAI info: ', [
-            'model' => $model,
+            'model' => $options['model'],
             'options' => $logOptions,
-            'temperature' => $temperature,
-            'topP' => $topP,
-            'maxTokens' => $maxTokens,
-            'stop' => $stop,
-            'stream' => $stream,
-            'presencePenalty' => $presencePenalty,
-            'frequencyPenalty' => $frequencyPenalty,
         ]);
 
         try {
             $client = new Client();
             $requestBody = [
-                'model' => $model,
+                'model' => $options['model'],
                 'messages' => [
                     [
                         'role' => 'user',
                         'content' => $prompt
                     ]
                 ],
-                'temperature' => $temperature,
-                'top_p' => $topP,
-                'max_tokens' => $maxTokens,
-                'stream' => $stream,
-                'presence_penalty' => $presencePenalty,
-                'frequency_penalty' => $frequencyPenalty,
+                'temperature' => $options['temperature'],
+                'top_p' => $options['topP'],
+                'max_tokens' => $options['maxTokens'],
+                'stream' => $options['stream'],
+                'presence_penalty' => $options['presencePenalty'],
+                'frequency_penalty' => $options['frequencyPenalty'],
             ];
 
-            if (!empty($stop)) {
-                $requestBody['stop'] = $stop;
+            if (!empty($options['stop'])) {
+                $requestBody['stop'] = $options['stop'];
             }
 
             $response = $client->post(self::DEFAULT_OPENAI_API_ENDPOINT, [
                 'headers' => [
-                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Authorization' => 'Bearer ' . $options['apiKey'],
                     'Content-Type' => 'application/json'
                 ],
                 'json' => $requestBody
@@ -76,11 +83,73 @@ class OpenAiService extends BaseService implements AiConnectorInterface
             $body = json_decode((string)$response->getBody(), true);
             return $body['choices'][0]['message']['content'] ?? null;
         } catch (RequestException $e) {
-            $this->handleServiceRequestException('OpenAI', $e, $apiKey, $logOptions, $model, false);
+            $this->handleServiceRequestException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], false);
             return null;
         } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('OpenAI', $e, $apiKey, $logOptions, $model, false);
+            $this->handleServiceGuzzleException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], false);
             return null;
+        }
+    }
+
+    public function streamProcess(string $prompt, array $options = []): \Generator
+    {
+        $options = $this->overrideParams($options, $this->params);
+
+        $logOptions = $options;
+        if (isset($logOptions['apiKey'])) {
+            $logOptions['apiKey'] = $this->maskApiKey($logOptions['apiKey']);
+        }
+        $this->logger->info('OpenAI stream info: ', ['model' => $options['model'], 'options' => $logOptions]);
+
+        $client = new Client();
+        $requestBody = [
+            'model' => $options['model'],
+            'messages' => [
+                [
+                    'role' => 'user',
+                    'content' => $prompt
+                ]
+            ],
+            'temperature' => $options['temperature'],
+            'top_p' => $options['topP'],
+            'max_tokens' => $options['maxTokens'],
+            'stream' => true, // Force streaming for this method
+            'presence_penalty' => $options['presencePenalty'],
+            'frequency_penalty' => $options['frequencyPenalty'],
+        ];
+
+        if (!empty($options['stop'])) {
+            $requestBody['stop'] = $options['stop'];
+        }
+
+        try {
+            $response = $client->post(self::DEFAULT_OPENAI_API_ENDPOINT, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $options['apiKey'],
+                    'Content-Type' => 'application/json'
+                ],
+                'json' => $requestBody,
+                'stream' => true,
+            ]);
+
+            $body = $response->getBody();
+            while (!$body->eof()) {
+                $line = $body->read(1024);
+                if (str_starts_with($line, 'data: ')) {
+                    $json = trim(substr($line, 5));
+                    if ($json === '[DONE]') {
+                        break;
+                    }
+                    $data = json_decode($json, true);
+                    if (isset($data['choices'][0]['delta']['content'])) {
+                        yield $data['choices'][0]['delta']['content'];
+                    }
+                }
+            }
+        } catch (RequestException $e) {
+            $this->handleServiceRequestException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
+        } catch (GuzzleException $e) {
+            $this->handleServiceGuzzleException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
         }
     }
 }

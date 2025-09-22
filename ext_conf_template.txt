@@ -7,9 +7,6 @@ geminiApiKey =
 # cat=Gemini; type=string; label=Gemini Model Name: The Gemini model to use.
 geminiModelName = gemini-2.0-flash
 
-# cat=Gemini; type=boolean; label=Gemini Stream: Enable stream for Gemini API.
-geminiStream = 0
-
 # cat=Gemini; type=float; label=Gemini Temperature: The temperature for the Gemini model.
 geminiTemperature = 0.9
 
@@ -27,6 +24,9 @@ geminiMaxOutputTokens = 1024
 
 # cat=Gemini; type=string; label=Gemini Stop Sequences: The stop sequences for the Gemini model (comma separated).
 geminiStopSequences = 
+
+# cat=Gemini; type=int; label=Gemini Chunk Size: The chunk size when using stream mode
+geminiChunkSize = 100
 
 # cat=OpenAi; type=string; label=OpenAI API Key: Your OpenAI API key.
 openAiApiKey = 
@@ -46,14 +46,14 @@ openAiMaxTokens = 1024
 # cat=OpenAi; type=string; label=OpenAI Stop: The stop sequences for the OpenAI model (comma separated).
 openAiStop = 
 
-# cat=OpenAi; type=boolean; label=OpenAI Stream: Enable stream for OpenAI API.
-openAiStream = 0
-
 # cat=OpenAi; type=float; label=OpenAI Presence Penalty: The presence penalty for the OpenAI model.
 openAiPresencePenalty = 0.0
 
 # cat=OpenAi; type=float; label=OpenAI Frequency Penalty: The frequency penalty for the OpenAI model.
 openAiFrequencyPenalty = 0.0
+
+# cat=OpenAi; type=int; label=OpenAi Chunk Size: The chunk size when using stream mode
+openAiChunkSize = 100
 
 # cat=Claude; type=string; label=Claude API Key: Your Claude API key.
 claudeApiKey = 
@@ -73,9 +73,6 @@ claudeSystem =
 # cat=Claude; type=string; label=Claude Stop Sequences: The stop sequences for the Claude model (comma separated).
 claudeStopSequences = 
 
-# cat=Claude; type=boolean; label=Claude Stream: Enable stream for Claude API.
-claudeStream = 0
-
 # cat=Claude; type=float; label=Claude Temperature: The temperature for the Claude model.
 claudeTemperature = 1.0
 
@@ -84,6 +81,9 @@ claudeTopP = 1.0
 
 # cat=Claude; type=int; label=Claude TopK: The topK for the Claude model.
 claudeTopK = 5
+
+# cat=Claude; type=int; label=Claude Chunk Size: The chunk size when using stream mode
+claudeChunkSize = 100
 
 # cat=Mistral; type=string; label=Mistral API Key: Your Mistral API key.
 mistralApiKey = 
@@ -106,11 +106,11 @@ mistralStop =
 # cat=Mistral; type=int; label=Mistral Random Seed: The random seed for the Mistral model.
 mistralRandomSeed = 0
 
-# cat=Mistral; type=boolean; label=Mistral Stream: Enable stream for Mistral API.
-mistralStream = 0
-
 # cat=Mistral; type=boolean; label=Mistral Safe Prompt: Enable safe prompt for Mistral API.
 mistralSafePrompt = 0
+
+# cat=Mistral; type=int; label=Mistral Chunk Size: The chunk size when using stream mode
+mistralChunkSize = 100
 
 # cat=Cohere; type=string; label=Cohere API Key: Your Cohere API key.
 cohereApiKey = 
@@ -139,11 +139,11 @@ coherePresencePenalty = 0.0
 # cat=Cohere; type=string; label=Cohere Stop Sequences: The stop sequences for the Cohere model (comma separated).
 cohereStopSequences = 
 
-# cat=Cohere; type=boolean; label=Cohere Stream: Enable stream for Cohere API.
-cohereStream = 0
-
 # cat=Cohere; type=string; label=Cohere Preamble: The preamble for the Cohere model.
 coherePreamble = 
+
+# cat=Cohere; type=int; label=Cohere Chunk Size: The chunk size when using stream mode
+cohereChunkSize = 100
 
 # cat=DeepL; type=string; label=DeepL API Key: Your DeepL API key.
 deeplApiKey = 
@@ -178,9 +178,6 @@ ollamaModelName = llama3
 # cat=Ollama; type=string; label=Ollama endPoint Url: The endPoint Url to use.
 ollamaEndPoint = http://ollama:11434
 
-# cat=Ollama; type=boolean; label=Ollama Stream: Enable stream for Ollama API.
-ollamaStream = 0
-
 # cat=Ollama; type=float; label=Ollama Temperature: The temperature for the Ollama model.
 ollamaTemperature = 0.8
 
@@ -198,6 +195,9 @@ ollamaFormat =
 
 # cat=Ollama; type=string; label=Ollama System: The system prompt for the Ollama model.
 ollamaSystem = 
+
+# cat=Ollama; type=int; label=Ollama Chunk Size: The chunk size when using stream mode
+ollamaChunkSize = 100
 
 # cat=GoogleTranslate; type=string; label=Google Translate API Key: Your Google Translate API key.
 googleTranslateApiKey = 

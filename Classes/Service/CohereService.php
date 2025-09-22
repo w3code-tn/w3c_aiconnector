@@ -7,6 +7,8 @@ namespace W3code\W3cAiconnector\Service;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
+use Psr\Log\LoggerInterface;
+use TYPO3\CMS\Core\Log\LogManagerInterface;
 use W3code\W3cAiconnector\Interface\AiConnectorInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -14,72 +16,83 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class CohereService extends BaseService implements AiConnectorInterface
 {
     private const API_ENDPOINT = 'https://api.cohere.ai/v1/chat';
+    private array $params = [];
+    protected LoggerInterface $logger;
 
-    public function process(string $prompt, array $options = []): ?string
+    public function __construct(LogManagerInterface $logManager)
     {
+        $this->logger = $logManager->getLogger(static::class);
         $extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class)
             ->get('w3c_aiconnector');
 
-        $apiKey = $options['apiKey'] ?? $extConf['cohereApiKey'] ?? '';
-        $model = $options['model'] ?? $extConf['cohereModelName'] ?? self::DEFAULT_COHERE_MODEL;
-        $maxTokens = $options['maxTokens'] ?? $extConf['cohereMaxTokens'] ?? self::DEFAULT_COHERE_MAX_TOKENS;
-        $temperature = $options['temperature'] ?? (float)($extConf['cohereTemperature'] ?? self::DEFAULT_COHERE_TEMPERATURE);
-        $p = $options['p'] ?? (float)($extConf['cohereP'] ?? self::DEFAULT_COHERE_P);
-        $k = $options['k'] ?? (int)($extConf['cohereK'] ?? self::DEFAULT_COHERE_K);
-        $frequencyPenalty = $options['frequencyPenalty'] ?? (float)($extConf['cohereFrequencyPenalty'] ?? self::DEFAULT_COHERE_FREQUENCY_PENALTY);
-        $presencePenalty = $options['presencePenalty'] ?? (float)($extConf['coherePresencePenalty'] ?? self::DEFAULT_COHERE_PRESENCE_PENALTY);
-        $stopSequences = $options['stopSequences'] ?? ($extConf['cohereStopSequences'] ? explode(',', $extConf['cohereStopSequences']) : self::DEFAULT_COHERE_STOP_SEQUENCES);
-        $stream = $options['stream'] ?? (bool)($extConf['cohereStream'] ?? self::DEFAULT_COHERE_STREAM);
-        $preamble = $options['preamble'] ?? $extConf['coherePreamble'] ?? self::DEFAULT_COHERE_PREAMBLE;
-        $chatHistory = $options['chatHistory'] ?? []; // Cohere expects an array of messages for chat_history
+        $this->params = [
+            'apiKey' => $extConf['cohereApiKey'] ?? '',
+            'model' => $extConf['cohereModelName'] ?? self::DEFAULT_COHERE_MODEL,
+            'maxTokens' => $extConf['cohereMaxTokens'] ?? self::DEFAULT_COHERE_MAX_TOKENS,
+            'temperature' => (float)($extConf['cohereTemperature'] ?? self::DEFAULT_COHERE_TEMPERATURE),
+            'p' => (float)($extConf['cohereP'] ?? self::DEFAULT_COHERE_P),
+            'k' => (int)($extConf['cohereK'] ?? self::DEFAULT_COHERE_K),
+            'frequencyPenalty' => (float)($extConf['cohereFrequencyPenalty'] ?? self::DEFAULT_COHERE_FREQUENCY_PENALTY),
+            'presencePenalty' => (float)($extConf['coherePresencePenalty'] ?? self::DEFAULT_COHERE_PRESENCE_PENALTY),
+            'stopSequences' => $extConf['cohereStopSequences'] ? explode(',', $extConf['cohereStopSequences']) : self::DEFAULT_COHERE_STOP_SEQUENCES,
+            'stream' => (bool)($extConf['cohereStream'] ?? self::DEFAULT_COHERE_STREAM),
+            'preamble' => $extConf['coherePreamble'] ?? self::DEFAULT_COHERE_PREAMBLE,
+            'chatHistory' => [], // Cohere expects an array of messages for chat_history
+            'chunkSize' => (int)($extConf['cohereChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
+        ];
+    }
+
+    public function process(string $prompt, array $options = []): ?string
+    {
+        $options = $this->overrideParams($options, $this->params);
 
         $logOptions = $options;
         if (isset($logOptions['apiKey'])) {
             $logOptions['apiKey'] = $this->maskApiKey($logOptions['apiKey']);
         }
-        $this->logger->info('Cohere info: ', ['model' => $model, 'options' => $logOptions]);
+        $this->logger->info('Cohere info: ', ['model' => $options['model'], 'options' => $logOptions]);
 
         $jsonBody = [
-            'model' => $model,
+            'model' => $options['model'],
             'message' => $prompt, // The user's message to send to the model. Can be used instead of chat_history
         ];
 
-        if (!empty($chatHistory)) {
-            $jsonBody['chat_history'] = $chatHistory;
+        if (!empty($options['chatHistory'])) {
+            $jsonBody['chat_history'] = $options['chatHistory'];
         }
-        if (!empty($maxTokens)) {
-            $jsonBody['max_tokens'] = $maxTokens;
+        if (!empty($options['maxTokens'])) {
+            $jsonBody['max_tokens'] = $options['maxTokens'];
         }
-        if (isset($temperature)) {
-            $jsonBody['temperature'] = $temperature;
+        if (isset($options['temperature'])) {
+            $jsonBody['temperature'] = $options['temperature'];
         }
-        if (isset($p)) {
-            $jsonBody['p'] = $p;
+        if (isset($options['p'])) {
+            $jsonBody['p'] = $options['p'];
         }
-        if (isset($k)) {
-            $jsonBody['k'] = $k;
+        if (isset($options['k'])) {
+            $jsonBody['k'] = $options['k'];
         }
-        if (isset($frequencyPenalty)) {
-            $jsonBody['frequency_penalty'] = $frequencyPenalty;
+        if (isset($options['frequencyPenalty'])) {
+            $jsonBody['frequency_penalty'] = $options['frequencyPenalty'];
         }
-        if (isset($presencePenalty)) {
-            $jsonBody['presence_penalty'] = $presencePenalty;
+        if (isset($options['presencePenalty'])) {
+            $jsonBody['presence_penalty'] = $options['presencePenalty'];
         }
-        if (!empty($stopSequences)) {
-            $jsonBody['stop_sequences'] = $stopSequences;
+        if (!empty($options['stopSequences'])) {
+            $jsonBody['stop_sequences'] = $options['stopSequences'];
         }
-        if (isset($stream)) {
-            $jsonBody['stream'] = $stream;
+        if (isset($options['stream'])) {
+            $jsonBody['stream'] = $options['stream'];
         }
-        if (!empty($preamble)) {
-            $jsonBody['preamble'] = $preamble;
+        if (!empty($options['preamble'])) {
+            $jsonBody['preamble'] = $options['preamble'];
         }
 
         try {
             $client = new Client();
             $response = $client->post(self::API_ENDPOINT, [
                 'headers' => [
-                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Authorization' => 'Bearer ' . $options['apiKey'],
                     'Content-Type' => 'application/json'
                 ],
                 'json' => $jsonBody
@@ -87,11 +100,81 @@ class CohereService extends BaseService implements AiConnectorInterface
             $body = json_decode((string)$response->getBody(), true);
             return $body['text'] ?? null;
         } catch (RequestException $e) {
-            $this->handleServiceRequestException('Cohere', $e, $apiKey, $logOptions, $model);
+            $this->handleServiceRequestException('Cohere', $e, $options['apiKey'], $logOptions, $options['model']);
             return null;
         } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('Cohere', $e, $apiKey, $logOptions, $model);
+            $this->handleServiceGuzzleException('Cohere', $e, $options['apiKey'], $logOptions, $options['model']);
             return null;
+        }
+    }
+
+    public function streamProcess(string $prompt, array $options = []): \Generator
+    {
+        $options = $this->overrideParams($options, $this->params);
+
+        $logOptions = $options;
+        if (isset($logOptions['apiKey'])) {
+            $logOptions['apiKey'] = $this->maskApiKey($logOptions['apiKey']);
+        }
+        $this->logger->info('Cohere stream info: ', ['model' => $options['model'], 'options' => $logOptions]);
+
+        $client = new Client();
+        $jsonBody = [
+            'model' => $options['model'],
+            'message' => $prompt,
+            'stream' => true, // Force streaming for this method
+        ];
+
+        if (!empty($options['chatHistory'])) {
+            $jsonBody['chat_history'] = $options['chatHistory'];
+        }
+        if (!empty($options['maxTokens'])) {
+            $jsonBody['max_tokens'] = $options['maxTokens'];
+        }
+        if (isset($options['temperature'])) {
+            $jsonBody['temperature'] = $options['temperature'];
+        }
+        if (isset($options['p'])) {
+            $jsonBody['p'] = $options['p'];
+        }
+        if (isset($options['k'])) {
+            $jsonBody['k'] = $options['k'];
+        }
+        if (isset($options['frequencyPenalty'])) {
+            $jsonBody['frequency_penalty'] = $options['frequencyPenalty'];
+        }
+        if (isset($options['presencePenalty'])) {
+            $jsonBody['presence_penalty'] = $options['presencePenalty'];
+        }
+        if (!empty($options['stopSequences'])) {
+            $jsonBody['stop_sequences'] = $options['stopSequences'];
+        }
+        if (!empty($options['preamble'])) {
+            $jsonBody['preamble'] = $options['preamble'];
+        }
+
+        try {
+            $response = $client->post(self::API_ENDPOINT, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $options['apiKey'],
+                    'Content-Type' => 'application/json'
+                ],
+                'json' => $jsonBody,
+                'stream' => true,
+            ]);
+
+            $body = $response->getBody();
+            while (!$body->eof()) {
+                $line = $body->read(1024);
+                $data = json_decode($line, true);
+                if (isset($data['event_type']) && $data['event_type'] === 'text-generation' && isset($data['text'])) {
+                    yield $data['text'];
+                }
+            }
+        } catch (RequestException $e) {
+            $this->handleServiceRequestException('Cohere', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
+        } catch (GuzzleException $e) {
+            $this->handleServiceGuzzleException('Cohere', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
         }
     }
 }
