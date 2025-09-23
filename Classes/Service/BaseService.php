@@ -80,7 +80,7 @@ abstract class BaseService
     protected const DEFAULT_GEMINI_CANDIDATE_COUNT = 1;
     protected const DEFAULT_GEMINI_MAX_OUTPUT_TOKENS = 1024;
     protected const DEFAULT_GEMINI_STOP_SEQUENCES = [];
-    protected const DEFAULT_STREAM_CHUNK_SIZE = 100;
+    protected const DEFAULT_STREAM_CHUNK_SIZE = 50;
 
     protected function maskApiKey(string $apiKey): string
     {
