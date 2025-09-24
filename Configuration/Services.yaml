@@ -13,6 +13,8 @@ services:
     public: true
     arguments:
       $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
+      $context: '@TYPO3\CMS\Core\Context\Context'
+      $languageServiceFactory: '@TYPO3\CMS\Core\Localization\LanguageServiceFactory'
 
   W3code\W3cAiconnector\Service\OllamaService:
     public: true

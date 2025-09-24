@@ -12,6 +12,9 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use W3code\W3cAiconnector\Interface\AiConnectorInterface;
 use Psr\Log\LoggerInterface;
 use TYPO3\CMS\Core\Log\LogManagerInterface;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
+use TYPO3\CMS\Core\Localization\LanguageService;
 
 class GeminiService extends BaseService implements AiConnectorInterface
 {
@@ -21,11 +24,22 @@ class GeminiService extends BaseService implements AiConnectorInterface
     private array $params = [];
 
     protected LoggerInterface $logger;
+    protected LanguageServiceFactory $languageServiceFactory;
+    protected ?LanguageService $languageService = null;
 
-    public function __construct(LogManagerInterface $logManager)
+
+    public function __construct(
+        LogManagerInterface $logManager, 
+        Context $context,
+        LanguageServiceFactory $languageServiceFactory
+    )
     {
-        
+        $this->languageServiceFactory = $languageServiceFactory;
         $this->logger = $logManager->getLogger(static::class);
+        $site = $GLOBALS['TYPO3_REQUEST']?->getAttribute('site');
+        $currentLanguage = $site->getLanguageById($context->getAspect('language')->getId());
+        $this->languageService = $this->languageServiceFactory->createFromSiteLanguage($currentLanguage);
+
         // intialiser les parametres comme apikey, model, temperature, topP, topK, candidateCount, maxOutputTokens, stopSequences
         $extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class)
             ->get('w3c_aiconnector');
@@ -73,14 +87,25 @@ class GeminiService extends BaseService implements AiConnectorInterface
             ]);
 
             $body = json_decode((string)$response->getBody(), true);
+
+            if (isset($body['error'])) {
+                $errorMessage = $body['error']['message'] ?? 'Unknown API error';
+                $this->logger->error('Gemini API Error', [
+                    'message' => $errorMessage,
+                    'code' => $body['error']['code'] ?? 'N/A',
+                    'status' => $body['error']['status'] ?? 'N/A',
+                ]);
+                return $this->languageService->sL('LLL:EXT:w3c_aicconnctor/Resources/Private/Language/locallang.xlf:not_available');
+            }
+
             return $body['candidates'][0]['content']['parts'][0]['text'] ?? null;
 
         } catch (RequestException $e) {
-            $this->handleServiceRequestException('Gemini', $e, $options['apiKey'], $logOptions, $options['model']);
-            return null;
+            $this->handleServiceRequestException('Gemini', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            return '{error: "' . $this->languageService->sL('LLL:EXT:w3c_aicconnctor/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('Gemini', $e, $options['apiKey'], $logOptions, $options['model']);
-            return null;
+            $this->handleServiceGuzzleException('Gemini', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            return '{error: "' . $this->languageService->sL('LLL:EXT:w3c_aicconnctor/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         }
     }
 
@@ -136,6 +161,15 @@ class GeminiService extends BaseService implements AiConnectorInterface
                         if ($braceLevel === 0 && !empty($currentObject)) {
                             $data = json_decode($currentObject, true);
                             if (json_last_error() === JSON_ERROR_NONE) {
+                                if (isset($data['error'])) {
+                                    $errorMessage = $data['error']['message'] ?? 'Unknown API error';
+                                    $this->logger->error('Gemini API Stream Error', [
+                                        'message' => $errorMessage,
+                                        'code' => $data['error']['code'] ?? 'N/A',
+                                        'status' => $data['error']['status'] ?? 'N/A',
+                                    ]);
+                                    yield $this->languageService->sL('LLL:EXT:w3c_aicconnctor/Resources/Private/Language/locallang.xlf:not_available');
+                                }
                                 // La structure de la réponse de cette API est identique
                                 $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
                                 if ($text) {
@@ -152,8 +186,10 @@ class GeminiService extends BaseService implements AiConnectorInterface
 
         } catch (RequestException $e) {
             $this->handleServiceRequestException('Gemini', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            yield $this->languageService->sL('LLL:EXT:w3c_aicconnctor/Resources/Private/Language/locallang.xlf:not_available');
         } catch (GuzzleException $e) {
             $this->handleServiceGuzzleException('Gemini', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            yield $this->languageService->sL('LLL:EXT:w3c_aicconnctor/Resources/Private/Language/locallang.xlf:not_available');
         }
     }
 }
