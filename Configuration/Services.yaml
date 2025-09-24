@@ -20,42 +20,58 @@ services:
     public: true
     arguments:
       $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
+      $context: '@TYPO3\CMS\Core\Context\Context'
+      $languageServiceFactory: '@TYPO3\CMS\Core\Localization\LanguageServiceFactory'
 
   W3code\W3cAiconnector\Service\OpenAiService:
     public: true
     arguments:
       $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
+      $context: '@TYPO3\CMS\Core\Context\Context'
+      $languageServiceFactory: '@TYPO3\CMS\Core\Localization\LanguageServiceFactory'
 
   W3code\W3cAiconnector\Service\ClaudeService:
     public: true
     arguments:
       $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
+      $context: '@TYPO3\CMS\Core\Context\Context'
+      $languageServiceFactory: '@TYPO3\CMS\Core\Localization\LanguageServiceFactory'
 
   W3code\W3cAiconnector\Service\CohereService:
     public: true
     arguments:
       $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
+      $context: '@TYPO3\CMS\Core\Context\Context'
+      $languageServiceFactory: '@TYPO3\CMS\Core\Localization\LanguageServiceFactory'
 
   W3code\W3cAiconnector\Service\MistralService:
     public: true
     arguments:
       $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
+      $context: '@TYPO3\CMS\Core\Context\Context'
+      $languageServiceFactory: '@TYPO3\CMS\Core\Localization\LanguageServiceFactory'
 
   W3code\W3cAiconnector\Service\DeepLService:
     public: true
     arguments:
       $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
+      $context: '@TYPO3\CMS\Core\Context\Context'
+      $languageServiceFactory: '@TYPO3\CMS\Core\Localization\LanguageServiceFactory'
 
   W3code\W3cAiconnector\Service\GoogleTranslateService:
     public: true
     arguments:
       $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
+      $context: '@TYPO3\CMS\Core\Context\Context'
+      $languageServiceFactory: '@TYPO3\CMS\Core\Localization\LanguageServiceFactory'
 
   W3code\W3cAiconnector\Service\CustomService:
     class: W3code\W3cAiconnector\Service\GeminiService 
     public: true
     arguments:
       $logManager: '@TYPO3\CMS\Core\Log\LogManagerInterface'
+      $context: '@TYPO3\CMS\Core\Context\Context'
+      $languageServiceFactory: '@TYPO3\CMS\Core\Localization\LanguageServiceFactory'
 
   W3code\W3cAiconnector\Service\AiConnectorFactory:
     public: true

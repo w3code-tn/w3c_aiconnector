@@ -12,15 +12,28 @@ use TYPO3\CMS\Core\Log\LogManagerInterface;
 use W3code\W3cAiconnector\Interface\AiConnectorInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
+use TYPO3\CMS\Core\Localization\LanguageService;
 
 class OpenAiService extends BaseService implements AiConnectorInterface
 {
     private array $params = [];
     protected LoggerInterface $logger;
+    protected LanguageServiceFactory $languageServiceFactory;
+    protected ?LanguageService $languageService = null;
 
-    public function __construct(LogManagerInterface $logManager)
-    {
+    public function __construct(
+        LogManagerInterface $logManager,
+        Context $context,
+        LanguageServiceFactory $languageServiceFactory
+    ) {
+        $this->languageServiceFactory = $languageServiceFactory;
         $this->logger = $logManager->getLogger(static::class);
+        $site = $GLOBALS['TYPO3_REQUEST']?->getAttribute('site');
+        $currentLanguage = $site->getLanguageById($context->getAspect('language')->getId());
+        $this->languageService = $this->languageServiceFactory->createFromSiteLanguage($currentLanguage);
+
         $extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class)
             ->get('w3c_aiconnector');
 
@@ -83,11 +96,11 @@ class OpenAiService extends BaseService implements AiConnectorInterface
             $body = json_decode((string)$response->getBody(), true);
             return $body['choices'][0]['message']['content'] ?? null;
         } catch (RequestException $e) {
-            $this->handleServiceRequestException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], false);
-            return null;
+            $this->handleServiceRequestException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            return '{error: "OpenAI - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], false);
-            return null;
+            $this->handleServiceGuzzleException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            return '{error: "OpenAI - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         }
     }
 
@@ -147,9 +160,11 @@ class OpenAiService extends BaseService implements AiConnectorInterface
                 }
             }
         } catch (RequestException $e) {
-            $this->handleServiceRequestException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
+            $this->handleServiceRequestException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            yield 'OpenAI - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available');
         } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
+            $this->handleServiceGuzzleException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            yield 'OpenAI - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available');
         }
     }
 }

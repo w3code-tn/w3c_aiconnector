@@ -88,24 +88,14 @@ class GeminiService extends BaseService implements AiConnectorInterface
 
             $body = json_decode((string)$response->getBody(), true);
 
-            if (isset($body['error'])) {
-                $errorMessage = $body['error']['message'] ?? 'Unknown API error';
-                $this->logger->error('Gemini API Error', [
-                    'message' => $errorMessage,
-                    'code' => $body['error']['code'] ?? 'N/A',
-                    'status' => $body['error']['status'] ?? 'N/A',
-                ]);
-                return $this->languageService->sL('LLL:EXT:w3c_aicconnctor/Resources/Private/Language/locallang.xlf:not_available');
-            }
-
             return $body['candidates'][0]['content']['parts'][0]['text'] ?? null;
 
         } catch (RequestException $e) {
             $this->handleServiceRequestException('Gemini', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
-            return '{error: "' . $this->languageService->sL('LLL:EXT:w3c_aicconnctor/Resources/Private/Language/locallang.xlf:not_available') . '"}';
+            return '{error: "Gemini - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         } catch (GuzzleException $e) {
             $this->handleServiceGuzzleException('Gemini', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
-            return '{error: "' . $this->languageService->sL('LLL:EXT:w3c_aicconnctor/Resources/Private/Language/locallang.xlf:not_available') . '"}';
+            return '{error: "Gemini - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         }
     }
 
@@ -161,16 +151,6 @@ class GeminiService extends BaseService implements AiConnectorInterface
                         if ($braceLevel === 0 && !empty($currentObject)) {
                             $data = json_decode($currentObject, true);
                             if (json_last_error() === JSON_ERROR_NONE) {
-                                if (isset($data['error'])) {
-                                    $errorMessage = $data['error']['message'] ?? 'Unknown API error';
-                                    $this->logger->error('Gemini API Stream Error', [
-                                        'message' => $errorMessage,
-                                        'code' => $data['error']['code'] ?? 'N/A',
-                                        'status' => $data['error']['status'] ?? 'N/A',
-                                    ]);
-                                    yield $this->languageService->sL('LLL:EXT:w3c_aicconnctor/Resources/Private/Language/locallang.xlf:not_available');
-                                }
-                                // La structure de la réponse de cette API est identique
                                 $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
                                 if ($text) {
                                     yield $text;
@@ -186,10 +166,10 @@ class GeminiService extends BaseService implements AiConnectorInterface
 
         } catch (RequestException $e) {
             $this->handleServiceRequestException('Gemini', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
-            yield $this->languageService->sL('LLL:EXT:w3c_aicconnctor/Resources/Private/Language/locallang.xlf:not_available');
+            yield 'Gemini - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available');
         } catch (GuzzleException $e) {
             $this->handleServiceGuzzleException('Gemini', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
-            yield $this->languageService->sL('LLL:EXT:w3c_aicconnctor/Resources/Private/Language/locallang.xlf:not_available');
+            yield 'Gemini - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available');
         }
     }
 }

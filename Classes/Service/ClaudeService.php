@@ -12,16 +12,29 @@ use TYPO3\CMS\Core\Log\LogManagerInterface;
 use W3code\W3cAiconnector\Interface\AiConnectorInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
+use TYPO3\CMS\Core\Localization\LanguageService;
 
 class ClaudeService extends BaseService implements AiConnectorInterface
 {
     private const API_ENDPOINT = 'https://api.anthropic.com/v1/messages';
     private array $params = [];
     protected LoggerInterface $logger;
+    protected LanguageServiceFactory $languageServiceFactory;
+    protected ?LanguageService $languageService = null;
 
-    public function __construct(LogManagerInterface $logManager)
-    {
+    public function __construct(
+        LogManagerInterface $logManager,
+        Context $context,
+        LanguageServiceFactory $languageServiceFactory
+    ) {
+        $this->languageServiceFactory = $languageServiceFactory;
         $this->logger = $logManager->getLogger(static::class);
+        $site = $GLOBALS['TYPO3_REQUEST']?->getAttribute('site');
+        $currentLanguage = $site->getLanguageById($context->getAspect('language')->getId());
+        $this->languageService = $this->languageServiceFactory->createFromSiteLanguage($currentLanguage);
+
         $extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class)
             ->get('w3c_aiconnector');
 
@@ -91,11 +104,11 @@ class ClaudeService extends BaseService implements AiConnectorInterface
             // Adapte la clé selon la réponse Claude
             return $body['content'][0]['text'] ?? null;
         } catch (RequestException $e) {
-            $this->handleServiceRequestException('Claude', $e, $options['apiKey'], $logOptions, $options['model']);
-            return null;
+            $this->handleServiceRequestException('Claude', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            return '{error: "Claude - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('Claude', $e, $options['apiKey'], $logOptions, $options['model']);
-            return null;
+            $this->handleServiceGuzzleException('Claude', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            return '{error: "Claude - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         }
     }
 
@@ -177,9 +190,11 @@ class ClaudeService extends BaseService implements AiConnectorInterface
                 }
             }
         } catch (RequestException $e) {
-            $this->handleServiceRequestException('Claude', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
+            $this->handleServiceRequestException('Claude', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            yield 'Claude - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available');
         } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('Claude', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
+            $this->handleServiceGuzzleException('Claude', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            yield 'Claude - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available');
         }
     }
 }

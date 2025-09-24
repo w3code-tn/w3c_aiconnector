@@ -12,16 +12,29 @@ use TYPO3\CMS\Core\Log\LogManagerInterface;
 use W3code\W3cAiconnector\Interface\AiConnectorInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
+use TYPO3\CMS\Core\Localization\LanguageService;
 
 class DeepLService extends BaseService implements AiConnectorInterface
 {
     private const API_ENDPOINT = 'https://api.deepl.com/v2/translate';
     private array $params = [];
     protected LoggerInterface $logger;
+    protected LanguageServiceFactory $languageServiceFactory;
+    protected ?LanguageService $languageService = null;
 
-    public function __construct(LogManagerInterface $logManager)
-    {
+    public function __construct(
+        LogManagerInterface $logManager,
+        Context $context,
+        LanguageServiceFactory $languageServiceFactory
+    ) {
+        $this->languageServiceFactory = $languageServiceFactory;
         $this->logger = $logManager->getLogger(static::class);
+        $site = $GLOBALS['TYPO3_REQUEST']?->getAttribute('site');
+        $currentLanguage = $site->getLanguageById($context->getAspect('language')->getId());
+        $this->languageService = $this->languageServiceFactory->createFromSiteLanguage($currentLanguage);
+
         $extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class)
             ->get('w3c_aiconnector');
 
@@ -88,11 +101,11 @@ class DeepLService extends BaseService implements AiConnectorInterface
             $body = json_decode((string)$response->getBody(), true);
             return $body['translations'][0]['text'] ?? null;
         } catch (RequestException $e) {
-            $this->handleServiceRequestException('DeepL', $e, $options['apiKey'], $logOptions, null, false);
-            return null;
+            $this->handleServiceRequestException('DeepL', $e, $options['apiKey'], $logOptions, null, true, $this->logger);
+            return '{error: "DeepL - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('DeepL', $e, $options['apiKey'], $logOptions, null, false);
-            return null;
+            $this->handleServiceGuzzleException('DeepL', $e, $options['apiKey'], $logOptions, null, true, $this->logger);
+            return '{error: "DeepL - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         }
     }
 
@@ -101,6 +114,11 @@ class DeepLService extends BaseService implements AiConnectorInterface
         $result = $this->process($prompt, $options);
         if ($result === null) {
             yield '';
+            return;
+        }
+
+        if (str_starts_with($result, '{error:')) {
+            yield $result;
             return;
         }
 
