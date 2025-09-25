@@ -1,6 +1,9 @@
 # cat=general; type=options[gemini,openai,ollama,claude,mistral,cohere,deepl,googletranslate,custom]; label=AI Provider: Select the AI provider to use.
 provider = gemini
 
+# cat=general; type=int; label=AI max retry attempts.
+maxRetries = 5
+
 # cat=Gemini; type=string; label=Gemini API Key: Your Google Gemini API key.
 geminiApiKey = 
 

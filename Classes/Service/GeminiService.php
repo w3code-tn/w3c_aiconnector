@@ -27,6 +27,7 @@ class GeminiService extends BaseService implements AiConnectorInterface
     protected LanguageServiceFactory $languageServiceFactory;
     protected ?LanguageService $languageService = null;
 
+    protected int $retryCount = 0;
 
     public function __construct(
         LogManagerInterface $logManager, 
@@ -55,8 +56,9 @@ class GeminiService extends BaseService implements AiConnectorInterface
                 'maxOutputTokens' => (int)($extConf['geminiMaxOutputTokens'] ?? self::DEFAULT_GEMINI_MAX_OUTPUT_TOKENS),
                 'stopSequences' => $extConf['geminiStopSequences'] ? explode(',', $extConf['geminiStopSequences']) : self::DEFAULT_GEMINI_STOP_SEQUENCES,
             ],
-            'chunkSize' => (int)($extConf['geminiChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
+            'chunkSize' => (int)($extConf['geminiChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),         
         ];
+        $this->maxRetries = (int)($extConf['maxRetries'] ?? self::DEFAULT_MAX_RETRIES);
     }
 
     public function process(string $prompt, array $options = []): ?string
@@ -93,7 +95,8 @@ class GeminiService extends BaseService implements AiConnectorInterface
         } catch (RequestException $e) {
             if ($e->hasResponse()) {
                 $statusCode = $e->getResponse()->getStatusCode();
-                if ($statusCode === 429 || $statusCode === 503) {
+                if ( ($statusCode === 429 || $statusCode === 503 ) && $this->retryCount < $this->maxRetries) {
+                    $this->retryCount++;
                     $this->logger->warning('Gemini 429 or 503 error', ['model' => $options['model'], 'options' => $logOptions]);
                     $options['model'] = $this->fallbackModel('gemini', $options['model']);
                     $this->process($prompt, $options);

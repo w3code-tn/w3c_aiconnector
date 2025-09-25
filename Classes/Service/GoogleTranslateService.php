@@ -23,6 +23,8 @@ class GoogleTranslateService extends BaseService implements AiConnectorInterface
     protected LanguageServiceFactory $languageServiceFactory;
     protected ?LanguageService $languageService = null;
 
+    protected int $retryCount = 0;
+
     public function __construct(
         LogManagerInterface $logManager,
         Context $context,
@@ -45,6 +47,7 @@ class GoogleTranslateService extends BaseService implements AiConnectorInterface
             'model' => $extConf['googleTranslateModel'] ?? self::DEFAULT_GOOGLE_TRANSLATE_MODEL,
             'cid' => $extConf['googleTranslateCid'] ?? self::DEFAULT_GOOGLE_TRANSLATE_CID,
         ];
+        $this->maxRetries = (int)($extConf['maxRetries'] ?? self::DEFAULT_MAX_RETRIES);
     }
 
     public function process(string $prompt, array $options = []): ?string
@@ -83,6 +86,15 @@ class GoogleTranslateService extends BaseService implements AiConnectorInterface
             $body = json_decode((string)$response->getBody(), true);
             return $body['data']['translations'][0]['translatedText'] ?? null;
         } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if ( ($statusCode === 429 || $statusCode === 500 || $statusCode === 503) && $this->retryCount < $this->maxRetries) {
+                    $this->retryCount++;
+                    $this->logger->warning('Google Translate 429, 500 or 503 error', ['options' => $logOptions]);
+                    sleep(5); // Wait 5 seconds before retrying
+                    $this->process($prompt, $options);
+                }
+            }
             $this->handleServiceRequestException('Google Translate', $e, $options['apiKey'], $logOptions, null, true, $this->logger);
             return '{error: "Google Translate - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         } catch (GuzzleException $e) {

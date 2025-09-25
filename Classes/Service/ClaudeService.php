@@ -24,6 +24,8 @@ class ClaudeService extends BaseService implements AiConnectorInterface
     protected LanguageServiceFactory $languageServiceFactory;
     protected ?LanguageService $languageService = null;
 
+    protected int $retryCount = 0;
+
     public function __construct(
         LogManagerInterface $logManager,
         Context $context,
@@ -51,6 +53,7 @@ class ClaudeService extends BaseService implements AiConnectorInterface
             'topK' => (int)($extConf['claudeTopK'] ?? self::DEFAULT_CLAUDE_TOP_K),
             'chunkSize' => (int)($extConf['claudeChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
         ];
+        $this->maxRetries = (int)($extConf['maxRetries'] ?? self::DEFAULT_MAX_RETRIES);
     }
 
     public function process(string $prompt, array $options = []): ?string
@@ -104,6 +107,15 @@ class ClaudeService extends BaseService implements AiConnectorInterface
             // Adapte la clé selon la réponse Claude
             return $body['content'][0]['text'] ?? null;
         } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if ( ($statusCode === 429 || $statusCode === 529 ) && $this->retryCount < $this->maxRetries) {
+                    $this->retryCount++;
+                    $this->logger->warning('Claude 429 or 529 error', ['model' => $options['model'], 'options' => $logOptions]);
+                    $options['model'] = $this->fallbackModel('claude', $options['model']);
+                    $this->process($prompt, $options);
+                }
+            }
             $this->handleServiceRequestException('Claude', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
             return '{error: "Claude - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         } catch (GuzzleException $e) {

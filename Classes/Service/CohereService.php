@@ -24,6 +24,8 @@ class CohereService extends BaseService implements AiConnectorInterface
     protected LanguageServiceFactory $languageServiceFactory;
     protected ?LanguageService $languageService = null;
 
+    protected int $retryCount = 0;
+
     public function __construct(
         LogManagerInterface $logManager,
         Context $context,
@@ -53,6 +55,7 @@ class CohereService extends BaseService implements AiConnectorInterface
             'chatHistory' => [], // Cohere expects an array of messages for chat_history
             'chunkSize' => (int)($extConf['cohereChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
         ];
+        $this->maxRetries = (int)($extConf['maxRetries'] ?? self::DEFAULT_MAX_RETRIES);
     }
 
     public function process(string $prompt, array $options = []): ?string
@@ -113,6 +116,15 @@ class CohereService extends BaseService implements AiConnectorInterface
             $body = json_decode((string)$response->getBody(), true);
             return $body['text'] ?? null;
         } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if ( ($statusCode === 429) && $this->retryCount < $this->maxRetries) {
+                    $this->retryCount++;
+                    $this->logger->warning('Cohere 429 error', ['model' => $options['model'], 'options' => $logOptions]);
+                    $options['model'] = $this->fallbackModel('cohere', $options['model']);
+                    $this->process($prompt, $options);
+                }
+            }
             $this->handleServiceRequestException('Cohere', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
             return '{error: "Cohere - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         } catch (GuzzleException $e) {

@@ -23,6 +23,8 @@ class OllamaService extends BaseService implements AiConnectorInterface
     protected LanguageServiceFactory $languageServiceFactory;
     protected ?LanguageService $languageService = null;
 
+    protected int $retryCount = 0;
+
     public function __construct(
         LogManagerInterface $logManager,
         Context $context,
@@ -49,6 +51,7 @@ class OllamaService extends BaseService implements AiConnectorInterface
             'system' => $extConf['ollamaSystem'] ?? self::DEFAULT_OLLAMA_SYSTEM,
             'chunkSize' => (int)($extConf['ollamaChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
         ];
+        $this->maxRetries = (int)($extConf['maxRetries'] ?? self::DEFAULT_MAX_RETRIES);
     }
 
     public function process(string $prompt, array $options = []): ?string
@@ -98,6 +101,15 @@ class OllamaService extends BaseService implements AiConnectorInterface
             return $body['response'] ?? null;
 
         } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if ( ($statusCode === 429 || $statusCode === 503) && $this->retryCount < $this->maxRetries) {
+                    $this->retryCount++;
+                    $this->logger->warning('Ollama 429 or 503 error', ['model' => $options['model'], 'options' => $logOptions]);
+                    $options['model'] = $this->fallbackModel('ollama', $options['model']);
+                    $this->process($prompt, $options);
+                }
+            }
             $this->handleServiceRequestException('Ollama', $e, '', $logOptions, $options['model'], true, $this->logger);
             return '{error: "Ollama - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         } catch (GuzzleException $e) {

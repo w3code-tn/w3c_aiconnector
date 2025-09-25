@@ -24,6 +24,8 @@ class DeepLService extends BaseService implements AiConnectorInterface
     protected LanguageServiceFactory $languageServiceFactory;
     protected ?LanguageService $languageService = null;
 
+    protected int $retryCount = 0;
+
     public function __construct(
         LogManagerInterface $logManager,
         Context $context,
@@ -50,6 +52,7 @@ class DeepLService extends BaseService implements AiConnectorInterface
             'outline_detection' => (bool)($extConf['deeplOutlineDetection'] ?? self::DEFAULT_DEEPL_OUTLINE_DETECTION),
             'non_splitting_tags' => $extConf['deeplNonSplittingTags'] ?? self::DEFAULT_DEEPL_NON_SPLITTING_TAGS,
         ];
+        $this->maxRetries = (int)($extConf['maxRetries'] ?? self::DEFAULT_MAX_RETRIES);
     }
 
     public function process(string $prompt, array $options = []): ?string
@@ -101,6 +104,15 @@ class DeepLService extends BaseService implements AiConnectorInterface
             $body = json_decode((string)$response->getBody(), true);
             return $body['translations'][0]['text'] ?? null;
         } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if ( ($statusCode === 429 || $statusCode === 456) && $this->retryCount < $this->maxRetries) {
+                    $this->retryCount++;
+                    $this->logger->warning('DeepL 429 or 456 error', ['options' => $logOptions]);
+                    sleep(5); // Wait 5 seconds before retrying
+                    $this->process($prompt, $options);
+                }
+            }
             $this->handleServiceRequestException('DeepL', $e, $options['apiKey'], $logOptions, null, true, $this->logger);
             return '{error: "DeepL - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         } catch (GuzzleException $e) {

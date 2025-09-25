@@ -23,6 +23,8 @@ class MistralService extends BaseService implements AiConnectorInterface
     protected LanguageServiceFactory $languageServiceFactory;
     protected ?LanguageService $languageService = null;
 
+    protected int $retryCount = 0;
+
     public function __construct(
         LogManagerInterface $logManager,
         Context $context,
@@ -49,6 +51,7 @@ class MistralService extends BaseService implements AiConnectorInterface
             'safePrompt' => (bool)($extConf['mistralSafePrompt'] ?? self::DEFAULT_MISTRAL_SAFE_PROMPT),
             'chunkSize' => (int)($extConf['mistralChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
         ];
+        $this->maxRetries = (int)($extConf['maxRetries'] ?? self::DEFAULT_MAX_RETRIES);
     }
 
     public function process(string $prompt, array $options = []): ?string
@@ -96,6 +99,15 @@ class MistralService extends BaseService implements AiConnectorInterface
             $body = json_decode((string)$response->getBody(), true);
             return $body['choices'][0]['message']['content'] ?? null;
         } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if ( ($statusCode === 429) && $this->retryCount < $this->maxRetries) {
+                    $this->retryCount++;
+                    $this->logger->warning('Mistral 429 error', ['model' => $options['model'], 'options' => $logOptions]);
+                    $options['model'] = $this->fallbackModel('mistral', $options['model']);
+                    $this->process($prompt, $options);
+                }
+            }
             $this->handleServiceRequestException('Mistral', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
             return '{error: "Mistral - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         } catch (GuzzleException $e) {
