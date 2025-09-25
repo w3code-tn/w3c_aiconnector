@@ -91,6 +91,14 @@ class GeminiService extends BaseService implements AiConnectorInterface
             return $body['candidates'][0]['content']['parts'][0]['text'] ?? null;
 
         } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if ($statusCode === 429 || $statusCode === 503) {
+                    $this->logger->warning('Gemini 429 or 503 error', ['model' => $options['model'], 'options' => $logOptions]);
+                    $options['model'] = $this->fallbackModel('gemini', $options['model']);
+                    $this->process($prompt, $options);
+                }
+            }
             $this->handleServiceRequestException('Gemini', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
             return '{error: "Gemini - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         } catch (GuzzleException $e) {

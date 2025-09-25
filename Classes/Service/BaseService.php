@@ -6,8 +6,6 @@ namespace W3code\W3cAiconnector\Service;
 
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
-use Psr\Log\LoggerInterface;
-use TYPO3\CMS\Core\Log\LogManagerInterface;
 
 abstract class BaseService
 {
@@ -23,7 +21,7 @@ abstract class BaseService
     protected const DEFAULT_COHERE_STOP_SEQUENCES = [];
     protected const DEFAULT_COHERE_STREAM = false;
     protected const DEFAULT_COHERE_PREAMBLE = '';
-    protected const DEFAULT_GEMINI_MODEL = 'gemini-1.5-flash';
+    protected const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash';
     protected const DEFAULT_MISTRAL_MODEL = 'mistral-large-latest';
     protected const DEFAULT_MISTRAL_TEMPERATURE = 0.7;
     protected const DEFAULT_MISTRAL_TOP_P = 1.0;
@@ -81,6 +79,39 @@ abstract class BaseService
     protected const DEFAULT_GEMINI_MAX_OUTPUT_TOKENS = 1024;
     protected const DEFAULT_GEMINI_STOP_SEQUENCES = [];
     protected const DEFAULT_STREAM_CHUNK_SIZE = 50;
+
+    protected array $fallbacks = [
+        'gemini' => [
+            'gemini-2.5-flash' => 'gemini-2.0-flash',
+            'gemini-2.0-flash' => 'gemini-1.5-flash',
+            'gemini-1.5-flash' => 'gemini-2.5-flash',
+        ],
+        'openai' => [
+            'gpt-4o' => 'gpt-4o-mini',
+            'gpt-4o-mini' => 'gpt-3.5-turbo',
+            'gpt-3.5-turbo' => 'gpt-4o',
+        ],
+        'claude' => [
+            'claude-3-opus-20240229' => 'claude-2',
+            'claude-2' => 'claude-instant-100k',
+            'claude-instant-100k' => 'claude-3-opus-20240229',
+        ],
+        'cohere' => [
+            'command-r-plus' => 'command-xlarge-nightly',
+            'command-xlarge-nightly' => 'command-xlarge-20221108',
+            'command-xlarge-20221108' => 'command-r-plus',
+        ],
+        'mistral' => [
+            'mistral-large-latest' => 'mistral-small-latest',
+            'mistral-small-latest' => 'mistral-large-latest',
+        ],
+        'ollama' => [
+            'llama3' => 'llama2',
+            'llama2' => 'llama1',
+            'llama1' => 'llama3',
+        ],
+        // Add other services and their model fallbacks as needed
+    ];
 
     protected function maskApiKey(string $apiKey): string
     {
@@ -147,7 +178,7 @@ abstract class BaseService
         $errorMessage = $this->maskErrorMessage($errorMessage, $apiKey, $isUrlKey);
 
         $logger->error(
-            $serviceName . ' error: ' . $errorMessage,
+            $serviceName . ' error: ',
             [
                 'model' => $model,
                 'options' => $logOptions,
@@ -170,7 +201,7 @@ abstract class BaseService
         $errorMessage = $this->maskErrorMessage($errorMessage, $apiKey, $isUrlKey);
 
         $logger->error(
-            $serviceName . ' error: ' . $errorMessage,
+            $serviceName . ' error: ',
             [
                 'model' => $model,
                 'options' => $logOptions,
@@ -179,15 +210,8 @@ abstract class BaseService
         );
     }
 
-    function isMarkdownChunkSafe(string $chunk): bool
+    protected function fallbackModel(string $service, string $currentModel): string
     {
-        // Vérifie si le chunk se termine par une ligne complète
-        // (évite de couper au milieu d'un bloc code ou d'une liste)
-        // Bloc code triple backtick
-        $openCode = substr_count($chunk, '```') % 2 !== 0;
-        // Liste non terminée (commence par * ou - mais pas de saut de ligne)
-        $openList = preg_match('/^(\*|-)\s.*[^\n]$/m', $chunk);
-
-        return !$openCode && !$openList;
+        return $this->fallbacks[$service][$currentModel];
     }
 }
