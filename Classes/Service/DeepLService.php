@@ -62,8 +62,8 @@ class DeepLService extends BaseService implements AiConnectorInterface
         $options = $this->overrideParams($options, $this->params);
 
         $logOptions = $options;
-        if (isset($logOptions['auth_key'])) {
-            $logOptions['auth_key'] = $this->maskApiKey($logOptions['auth_key']);
+        if (isset($logOptions['apiKey'])) {
+            $logOptions['apiKey'] = $this->maskApiKey($logOptions['apiKey']);
         }
         $this->logger->info('DeepL info: ', ['target_lang' => $options['target_lang'], 'options' => $logOptions]);
 
