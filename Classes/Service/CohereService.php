@@ -53,6 +53,10 @@ class CohereService extends BaseService implements AiConnectorInterface
             'chatHistory' => [], // Cohere expects an array of messages for chat_history
             'chunkSize' => (int)($extConf['cohereChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
         ];
+
+        if (!empty($extConf['cohereFallbackModels'])) {
+            $this->fallbacks['cohere'] = $this->getExtConfFallbackModel($extConf['cohereFallbackModels']);
+        }
     }
 
     public function process(string $prompt, array $options = []): ?string
@@ -113,10 +117,18 @@ class CohereService extends BaseService implements AiConnectorInterface
             $body = json_decode((string)$response->getBody(), true);
             return $body['text'] ?? null;
         } catch (RequestException $e) {
-            $this->handleServiceRequestException('Cohere', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if (($statusCode === 429 || $statusCode === 503) && !empty($this->fallbacks['cohere'])) {
+                    $this->logger->warning('Cohere 429 or 503 error, trying fallback', ['model' => $options['model'], 'options' => $logOptions]);
+                    $options['model'] = $this->fallbackModel('cohere', $options['model']);
+                    return $this->process($prompt, $options);
+                }
+            }
+            $this->handleServiceRequestException('Cohere', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
             return '{error: "Cohere - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('Cohere', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            $this->handleServiceGuzzleException('Cohere', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
             return '{error: "Cohere - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         }
     }
@@ -185,10 +197,19 @@ class CohereService extends BaseService implements AiConnectorInterface
                 }
             }
         } catch (RequestException $e) {
-            $this->handleServiceRequestException('Cohere', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if (($statusCode === 429 || $statusCode === 503) && !empty($this->fallbacks['cohere'])) {
+                    $this->logger->warning('Cohere 429 or 503 error, trying fallback', ['model' => $options['model'], 'options' => $logOptions]);
+                    $options['model'] = $this->fallbackModel('cohere', $options['model']);
+                    yield from $this->streamProcess($prompt, $options);
+                    return;
+                }
+            }
+            $this->handleServiceRequestException('Cohere', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
             yield 'Cohere - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available');
         } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('Cohere', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            $this->handleServiceGuzzleException('Cohere', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
             yield 'Cohere - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available');
         }
     }

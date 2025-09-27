@@ -57,6 +57,10 @@ class GeminiService extends BaseService implements AiConnectorInterface
             ],
             'chunkSize' => (int)($extConf['geminiChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
         ];
+
+        if($extConf['geminiFallbackModels'] ?? false) {
+            $this->fallbacks['gemini'] = $this->getExtConfFallbackModel($extConf['geminiFallbackModels']);
+        }
     }
 
     public function process(string $prompt, array $options = []): ?string

@@ -49,6 +49,10 @@ class MistralService extends BaseService implements AiConnectorInterface
             'safePrompt' => (bool)($extConf['mistralSafePrompt'] ?? self::DEFAULT_MISTRAL_SAFE_PROMPT),
             'chunkSize' => (int)($extConf['mistralChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
         ];
+
+        if (!empty($extConf['mistralFallbackModels'])) {
+            $this->fallbacks['mistral'] = $this->getExtConfFallbackModel($extConf['mistralFallbackModels']);
+        }
     }
 
     public function process(string $prompt, array $options = []): ?string
@@ -96,10 +100,18 @@ class MistralService extends BaseService implements AiConnectorInterface
             $body = json_decode((string)$response->getBody(), true);
             return $body['choices'][0]['message']['content'] ?? null;
         } catch (RequestException $e) {
-            $this->handleServiceRequestException('Mistral', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if (($statusCode === 429 || $statusCode === 503) && !empty($this->fallbacks['mistral'])) {
+                    $this->logger->warning('Mistral 429 or 503 error, trying fallback', ['model' => $options['model'], 'options' => $logOptions]);
+                    $options['model'] = $this->fallbackModel('mistral', $options['model']);
+                    return $this->process($prompt, $options);
+                }
+            }
+            $this->handleServiceRequestException('Mistral', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
             return '{error: "Mistral - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('Mistral', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            $this->handleServiceGuzzleException('Mistral', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
             return '{error: "Mistral - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         }
     }
@@ -160,10 +172,19 @@ class MistralService extends BaseService implements AiConnectorInterface
                 }
             }
         } catch (RequestException $e) {
-            $this->handleServiceRequestException('Mistral', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if (($statusCode === 429 || $statusCode === 503) && !empty($this->fallbacks['mistral'])) {
+                    $this->logger->warning('Mistral 429 or 503 error, trying fallback', ['model' => $options['model'], 'options' => $logOptions]);
+                    $options['model'] = $this->fallbackModel('mistral', $options['model']);
+                    yield from $this->streamProcess($prompt, $options);
+                    return;
+                }
+            }
+            $this->handleServiceRequestException('Mistral', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
             yield 'Mistral - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available');
         } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('Mistral', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            $this->handleServiceGuzzleException('Mistral', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
             yield 'Mistral - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available');
         }
     }

@@ -49,6 +49,10 @@ class OllamaService extends BaseService implements AiConnectorInterface
             'system' => $extConf['ollamaSystem'] ?? self::DEFAULT_OLLAMA_SYSTEM,
             'chunkSize' => (int)($extConf['ollamaChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
         ];
+
+        if (!empty($extConf['ollamaFallbackModels'])) {
+            $this->fallbacks['ollama'] = $this->getExtConfFallbackModel($extConf['ollamaFallbackModels']);
+        }
     }
 
     public function process(string $prompt, array $options = []): ?string
@@ -98,6 +102,14 @@ class OllamaService extends BaseService implements AiConnectorInterface
             return $body['response'] ?? null;
 
         } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if (($statusCode === 429 || $statusCode === 503) && !empty($this->fallbacks['ollama'])) {
+                    $this->logger->warning('Ollama 429 or 503 error, trying fallback', ['model' => $options['model'], 'options' => $logOptions]);
+                    $options['model'] = $this->fallbackModel('ollama', $options['model']);
+                    return $this->process($prompt, $options);
+                }
+            }
             $this->handleServiceRequestException('Ollama', $e, '', $logOptions, $options['model'], true, $this->logger);
             return '{error: "Ollama - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         } catch (GuzzleException $e) {
@@ -159,6 +171,15 @@ class OllamaService extends BaseService implements AiConnectorInterface
                 }
             }
         } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if (($statusCode === 429 || $statusCode === 503) && !empty($this->fallbacks['ollama'])) {
+                    $this->logger->warning('Ollama 429 or 503 error, trying fallback', ['model' => $options['model'], 'options' => $logOptions]);
+                    $options['model'] = $this->fallbackModel('ollama', $options['model']);
+                    yield from $this->streamProcess($prompt, $options);
+                    return;
+                }
+            }
             $this->handleServiceRequestException('Ollama', $e, '', $logOptions, $options['model'], true, $this->logger);
             yield 'Ollama - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available');
         } catch (GuzzleException $e) {

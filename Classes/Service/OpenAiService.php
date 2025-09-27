@@ -49,6 +49,10 @@ class OpenAiService extends BaseService implements AiConnectorInterface
             'frequencyPenalty' => (float)($extConf['openAiFrequencyPenalty'] ?? self::DEFAULT_OPENAI_FREQUENCY_PENALTY),
             'chunkSize' => (int)($extConf['openAiChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
         ];
+
+        if (!empty($extConf['openAiFallbackModels'])) {
+            $this->fallbacks['openai'] = $this->getExtConfFallbackModel($extConf['openAiFallbackModels']);
+        }
     }
 
     public function process(string $prompt, array $options = []): ?string
