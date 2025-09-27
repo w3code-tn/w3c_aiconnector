@@ -169,8 +169,8 @@ deeplApiKey =
 # cat=DeepL; type=string; label=DeepL Source Language: The source language for DeepL (optional).
 deeplSourceLang = 
 
-# cat=DeepL; type=options[off,on,nonewlines]; label=DeepL Split Sentences: How sentences should be split.
-deeplSplitSentences = on
+# cat=DeepL; type=options[0,1,nonewlines]; label=DeepL Split Sentences: How sentences should be split.
+deeplSplitSentences = 1
 
 # cat=DeepL; type=boolean; label=DeepL Preserve Formatting: Preserve formatting in the translation.
 deeplPreserveFormatting = 0
