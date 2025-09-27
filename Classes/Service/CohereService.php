@@ -43,7 +43,7 @@ class CohereService extends BaseService implements AiConnectorInterface
         $this->params = [
             'apiKey' => $extConf['cohereApiKey'] ?? '',
             'model' => $extConf['cohereModelName'] ?? self::DEFAULT_COHERE_MODEL,
-            'maxTokens' => $extConf['cohereMaxTokens'] ?? self::DEFAULT_COHERE_MAX_TOKENS,
+            'maxTokens' => (int)($extConf['cohereMaxTokens'] ?? self::DEFAULT_COHERE_MAX_TOKENS),
             'temperature' => (float)($extConf['cohereTemperature'] ?? self::DEFAULT_COHERE_TEMPERATURE),
             'p' => (float)($extConf['cohereP'] ?? self::DEFAULT_COHERE_P),
             'k' => (int)($extConf['cohereK'] ?? self::DEFAULT_COHERE_K),

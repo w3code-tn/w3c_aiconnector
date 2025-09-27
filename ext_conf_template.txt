@@ -46,17 +46,11 @@ openAiTemperature = 1.0
 # cat=OpenAi; type=float; label=OpenAI TopP: The topP for the OpenAI model.
 openAiTopP = 1.0
 
-# cat=OpenAi; type=int; label=OpenAI Max Tokens: The maximum number of tokens to generate.
-openAiMaxTokens = 1024
+# cat=OpenAi; type=int; label=OpenAI Max Output Tokens: The maximum number of tokens to generate.
+openAiMaxOutputTokens = 1024
 
 # cat=OpenAi; type=string; label=OpenAI Stop: The stop sequences for the OpenAI model (comma separated).
 openAiStop = 
-
-# cat=OpenAi; type=float; label=OpenAI Presence Penalty: The presence penalty for the OpenAI model.
-openAiPresencePenalty = 0.0
-
-# cat=OpenAi; type=float; label=OpenAI Frequency Penalty: The frequency penalty for the OpenAI model.
-openAiFrequencyPenalty = 0.0
 
 # cat=OpenAi; type=int; label=OpenAi Chunk Size: The chunk size when using stream mode
 openAiChunkSize = 100
@@ -68,7 +62,7 @@ openAiFallbackModels =
 claudeApiKey = 
 
 # cat=Claude; type=string; label=Claude Model Name: The Claude model to use.
-claudeModelName = claude-3-opus-20240229
+claudeModelName = claude-opus-4-1-20250805
 
 # cat=Claude; type=string; label=Claude API Version: The Claude API version to use.
 claudeApiVersion = 2023-06-01
@@ -95,7 +89,7 @@ claudeTopK = 5
 claudeChunkSize = 100
 
 # cat=Claude; type=string; label=Claude Fallback Models: Comma-separated list of Claude models to use as fallback.
-claudeFallbackModels = 
+claudeFallbackModels = claude-opus-4-1-20250805, claude-opus-4-20250514, claude-sonnet-4-20250514, claude-3-7-sonnet-20250219, claude-3-5-haiku-20241022, claude-3-5-haiku-20241022
 
 # cat=Mistral; type=string; label=Mistral API Key: Your Mistral API key.
 mistralApiKey = 
@@ -131,7 +125,7 @@ mistralFallbackModels =
 cohereApiKey = 
 
 # cat=Cohere; type=string; label=Cohere Model Name: The Cohere model to use.
-cohereModelName = command-r-plus
+cohereModelName = command-a-03-2025
 
 # cat=Cohere; type=int; label=Cohere Max Tokens: The maximum number of tokens to generate.
 cohereMaxTokens = 1024
@@ -161,7 +155,7 @@ coherePreamble =
 cohereChunkSize = 100
 
 # cat=Cohere; type=string; label=Cohere Fallback Models: Comma-separated list of Cohere models to use as fallback.
-cohereFallbackModels = 
+cohereFallbackModels = command-a-03-2025, command-r7b-12-2024, command-a-reasoning-08-2025, command-a-vision-07-2025, command-r-08-2024, command-r-plus-08-2024
 
 # cat=DeepL; type=string; label=DeepL API Key: Your DeepL API key.
 deeplApiKey = 

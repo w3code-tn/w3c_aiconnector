@@ -10,8 +10,8 @@ use GuzzleHttp\Exception\RequestException;
 abstract class BaseService
 {
     protected const DEFAULT_MISTRAL_API_ENDPOINT = 'https://api.mistral.ai/v1/chat/completions';
-    protected const DEFAULT_CLAUDE_MODEL = 'claude-3-opus-20240229';
-    protected const DEFAULT_COHERE_MODEL = 'command-r-plus';
+    protected const DEFAULT_CLAUDE_MODEL = 'claude-opus-4-1-20250805';
+    protected const DEFAULT_COHERE_MODEL = 'command-a-03-2025';
     protected const DEFAULT_COHERE_MAX_TOKENS = 1024;
     protected const DEFAULT_COHERE_TEMPERATURE = 0.3;
     protected const DEFAULT_COHERE_P = 0.75;
@@ -38,7 +38,7 @@ abstract class BaseService
     protected const DEFAULT_OLLAMA_FORMAT = ''; // e.g., 'json'
     protected const DEFAULT_OLLAMA_SYSTEM = '';
     protected const DEFAULT_OLLAMA_MODEL = 'llama3';
-    protected const DEFAULT_OPENAI_API_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
+    protected const DEFAULT_OPENAI_API_ENDPOINT = 'https://api.openai.com/v1/responses';
     protected const DEFAULT_OPENAI_TEMPERATURE = 1.0;
     protected const DEFAULT_OPENAI_TOP_P = 1.0;
     protected const DEFAULT_OPENAI_MAX_TOKENS = 1024;

@@ -44,11 +44,9 @@ class OpenAiService extends BaseService implements AiConnectorInterface
             'model' => $extConf['openAiModelName'] ?? self::DEFAULT_OPENAI_MODEL,
             'temperature' => (float)($extConf['openAiTemperature'] ?? self::DEFAULT_OPENAI_TEMPERATURE),
             'topP' => (float)($extConf['openAiTopP'] ?? self::DEFAULT_OPENAI_TOP_P),
-            'maxTokens' => (int)($extConf['openAiMaxTokens'] ?? self::DEFAULT_OPENAI_MAX_TOKENS),
+            'max_output_tokens' => (int)($extConf['openAiMaxOutputTokens'] ?? self::DEFAULT_OPENAI_MAX_TOKENS),
             'stop' => $extConf['openAiStop'] ? GeneralUtility::trimExplode(',', $extConf['openAiStop'], true) : self::DEFAULT_OPENAI_STOP,
             'stream' => (bool)($extConf['openAiStream'] ?? self::DEFAULT_OPENAI_STREAM),
-            'presencePenalty' => (float)($extConf['openAiPresencePenalty'] ?? self::DEFAULT_OPENAI_PRESENCE_PENALTY),
-            'frequencyPenalty' => (float)($extConf['openAiFrequencyPenalty'] ?? self::DEFAULT_OPENAI_FREQUENCY_PENALTY),
             'chunkSize' => (int)($extConf['openAiChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
         ];
         $this->maxRetries = (int)($extConf['maxRetries'] ?? self::DEFAULT_MAX_RETRIES);
@@ -75,18 +73,10 @@ class OpenAiService extends BaseService implements AiConnectorInterface
             $client = new Client();
             $requestBody = [
                 'model' => $options['model'],
-                'messages' => [
-                    [
-                        'role' => 'user',
-                        'content' => $prompt
-                    ]
-                ],
+                'input' => $prompt,
                 'temperature' => $options['temperature'],
                 'top_p' => $options['topP'],
-                'max_tokens' => $options['maxTokens'],
-                'stream' => $options['stream'],
-                'presence_penalty' => $options['presencePenalty'],
-                'frequency_penalty' => $options['frequencyPenalty'],
+                'max_output_tokens' => $options['max_output_tokens'],
             ];
 
             if (!empty($options['stop'])) {
@@ -101,22 +91,23 @@ class OpenAiService extends BaseService implements AiConnectorInterface
                 'json' => $requestBody
             ]);
             $body = json_decode((string)$response->getBody(), true);
-            return $body['choices'][0]['message']['content'] ?? null;
+            return $body['output'][0]['content'][0]['text'] ?? null;
         } catch (RequestException $e) {
             if ($e->hasResponse()) {
                 $statusCode = $e->getResponse()->getStatusCode();
                 if ( ($statusCode === 429) && $this->retryCount < $this->maxRetries) {
                     $this->retryCount++;
                     $this->logger->warning('OpenAI 429 error', ['model' => $options['model'], 'options' => $logOptions]);
+                    $this->handleServiceRequestException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
                     $options['model'] = $this->fallbackModel('openai', $options['model']);
                     return $this->process($prompt, $options);
                 }
             }
-            $this->handleServiceRequestException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            $this->handleServiceRequestException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
             return '{error: "OpenAI - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         }
         catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            $this->handleServiceGuzzleException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
             return '{error: "OpenAI - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         }
     }
@@ -134,18 +125,11 @@ class OpenAiService extends BaseService implements AiConnectorInterface
         $client = new Client();
         $requestBody = [
             'model' => $options['model'],
-            'messages' => [
-                [
-                    'role' => 'user',
-                    'content' => $prompt
-                ]
-            ],
+            'input' => $prompt,
             'temperature' => $options['temperature'],
             'top_p' => $options['topP'],
-            'max_tokens' => $options['maxTokens'],
+            'max_output_tokens' => $options['max_output_tokens'],
             'stream' => true, // Force streaming for this method
-            'presence_penalty' => $options['presencePenalty'],
-            'frequency_penalty' => $options['frequencyPenalty'],
         ];
 
         if (!empty($options['stop'])) {
@@ -171,8 +155,8 @@ class OpenAiService extends BaseService implements AiConnectorInterface
                         break;
                     }
                     $data = json_decode($json, true);
-                    if (isset($data['choices'][0]['delta']['content'])) {
-                        yield $data['choices'][0]['delta']['content'];
+                    if (isset($data['output'][0]['content'][0]['text'])) {
+                        yield $data['output'][0]['content'][0]['text'];
                     }
                 }
             }
@@ -187,10 +171,10 @@ class OpenAiService extends BaseService implements AiConnectorInterface
                     return;
                 }
             }
-            $this->handleServiceRequestException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            $this->handleServiceRequestException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
             yield 'OpenAI - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available');
         } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            $this->handleServiceGuzzleException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
             yield 'OpenAI - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available');
         }
     }
