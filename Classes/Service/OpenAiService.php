@@ -52,6 +52,10 @@ class OpenAiService extends BaseService implements AiConnectorInterface
             'chunkSize' => (int)($extConf['openAiChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
         ];
         $this->maxRetries = (int)($extConf['maxRetries'] ?? self::DEFAULT_MAX_RETRIES);
+
+        if (!empty($extConf['openAiFallbackModels'])) {
+            $this->fallbacks['openai'] = $this->getExtConfFallbackModel($extConf['openAiFallbackModels']);
+        }
     }
 
     public function process(string $prompt, array $options = []): ?string
@@ -105,12 +109,13 @@ class OpenAiService extends BaseService implements AiConnectorInterface
                     $this->retryCount++;
                     $this->logger->warning('OpenAI 429 error', ['model' => $options['model'], 'options' => $logOptions]);
                     $options['model'] = $this->fallbackModel('openai', $options['model']);
-                    $this->process($prompt, $options);
+                    return $this->process($prompt, $options);
                 }
             }
             $this->handleServiceRequestException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
             return '{error: "OpenAI - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
-        } catch (GuzzleException $e) {
+        }
+        catch (GuzzleException $e) {
             $this->handleServiceGuzzleException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
             return '{error: "OpenAI - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         }
@@ -172,6 +177,16 @@ class OpenAiService extends BaseService implements AiConnectorInterface
                 }
             }
         } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if (($statusCode === 429) && $this->retryCount < $this->maxRetries && !empty($this->fallbacks['openai'])) {
+                    $this->retryCount++;
+                    $this->logger->warning('OpenAI 429 error, trying fallback', ['model' => $options['model'], 'options' => $logOptions]);
+                    $options['model'] = $this->fallbackModel('openai', $options['model']);
+                    yield from $this->streamProcess($prompt, $options);
+                    return;
+                }
+            }
             $this->handleServiceRequestException('OpenAI', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
             yield 'OpenAI - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available');
         } catch (GuzzleException $e) {

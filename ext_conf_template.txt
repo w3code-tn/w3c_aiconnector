@@ -31,6 +31,9 @@ geminiStopSequences =
 # cat=Gemini; type=int; label=Gemini Chunk Size: The chunk size when using stream mode
 geminiChunkSize = 100
 
+# cat=Gemini; type=string; label=Gemini Fallback Models: Comma-separated list of Gemini models to use as fallback.
+geminiFallbackModels = gemini-2.5-pro, gemini-2.5-flash, gemini-2.0-flash
+
 # cat=OpenAi; type=string; label=OpenAI API Key: Your OpenAI API key.
 openAiApiKey = 
 
@@ -57,6 +60,9 @@ openAiFrequencyPenalty = 0.0
 
 # cat=OpenAi; type=int; label=OpenAi Chunk Size: The chunk size when using stream mode
 openAiChunkSize = 100
+
+# cat=OpenAi; type=string; label=OpenAI Fallback Models: Comma-separated list of OpenAI models to use as fallback.
+openAiFallbackModels = 
 
 # cat=Claude; type=string; label=Claude API Key: Your Claude API key.
 claudeApiKey = 
@@ -88,6 +94,9 @@ claudeTopK = 5
 # cat=Claude; type=int; label=Claude Chunk Size: The chunk size when using stream mode
 claudeChunkSize = 100
 
+# cat=Claude; type=string; label=Claude Fallback Models: Comma-separated list of Claude models to use as fallback.
+claudeFallbackModels = 
+
 # cat=Mistral; type=string; label=Mistral API Key: Your Mistral API key.
 mistralApiKey = 
 
@@ -114,6 +123,9 @@ mistralSafePrompt = 0
 
 # cat=Mistral; type=int; label=Mistral Chunk Size: The chunk size when using stream mode
 mistralChunkSize = 100
+
+# cat=Mistral; type=string; label=Mistral Fallback Models: Comma-separated list of Mistral models to use as fallback.
+mistralFallbackModels = 
 
 # cat=Cohere; type=string; label=Cohere API Key: Your Cohere API key.
 cohereApiKey = 
@@ -148,6 +160,9 @@ coherePreamble =
 # cat=Cohere; type=int; label=Cohere Chunk Size: The chunk size when using stream mode
 cohereChunkSize = 100
 
+# cat=Cohere; type=string; label=Cohere Fallback Models: Comma-separated list of Cohere models to use as fallback.
+cohereFallbackModels = 
+
 # cat=DeepL; type=string; label=DeepL API Key: Your DeepL API key.
 deeplApiKey = 
 
@@ -175,6 +190,9 @@ deeplOutlineDetection = 0
 # cat=DeepL; type=string; label=DeepL Non Splitting Tags: Comma-separated list of tags that should not be split.
 deeplNonSplittingTags = 
 
+# cat=DeepL; type=options[pro,free]; label=DeepL API Version: Select the DeepL API version to use (pro or free).
+deeplApiVersion = free
+
 # cat=Ollama; type=string; label=Ollama Model Name: The Ollama model to use (e.g., llama3).
 ollamaModelName = llama3
 
@@ -201,6 +219,9 @@ ollamaSystem =
 
 # cat=Ollama; type=int; label=Ollama Chunk Size: The chunk size when using stream mode
 ollamaChunkSize = 100
+
+# cat=Ollama; type=string; label=Ollama Fallback Models: Comma-separated list of Ollama models to use as fallback.
+ollamaFallbackModels = 
 
 # cat=GoogleTranslate; type=string; label=Google Translate API Key: Your Google Translate API key.
 googleTranslateApiKey = 

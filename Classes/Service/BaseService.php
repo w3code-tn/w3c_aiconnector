@@ -217,4 +217,16 @@ abstract class BaseService
     {
         return $this->fallbacks[$service][$currentModel];
     }
+
+    protected function getExtConfFallbackModel(string $extConf): array
+    {
+        $models = array_map('trim', explode(',', $extConf));
+        $fallbacks = [];
+        if (count($models) > 1) {
+            for ($i = 0; $i < count($models); $i++) {
+                $fallbacks[$models[$i]] = $models[($i + 1) % count($models)];
+            }
+        }
+        return $fallbacks;
+    }
 }

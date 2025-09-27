@@ -54,6 +54,10 @@ class ClaudeService extends BaseService implements AiConnectorInterface
             'chunkSize' => (int)($extConf['claudeChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
         ];
         $this->maxRetries = (int)($extConf['maxRetries'] ?? self::DEFAULT_MAX_RETRIES);
+
+        if (!empty($extConf['claudeFallbackModels'])) {
+            $this->fallbacks['claude'] = $this->getExtConfFallbackModel($extConf['claudeFallbackModels']);
+        }
     }
 
     public function process(string $prompt, array $options = []): ?string
@@ -119,7 +123,7 @@ class ClaudeService extends BaseService implements AiConnectorInterface
             $this->handleServiceRequestException('Claude', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
             return '{error: "Claude - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('Claude', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            $this->handleServiceGuzzleException('Claude', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
             return '{error: "Claude - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available') . '"}';
         }
     }
@@ -202,10 +206,19 @@ class ClaudeService extends BaseService implements AiConnectorInterface
                 }
             }
         } catch (RequestException $e) {
-            $this->handleServiceRequestException('Claude', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if (($statusCode === 429 || $statusCode === 503) && !empty($this->fallbacks['claude'])) {
+                    $this->logger->warning('Claude 429 or 503 error, trying fallback', ['model' => $options['model'], 'options' => $logOptions]);
+                    $options['model'] = $this->fallbackModel('claude', $options['model']);
+                    yield from $this->streamProcess($prompt, $options);
+                    return;
+                }
+            }
+            $this->handleServiceRequestException('Claude', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
             yield 'Claude - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available');
         } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('Claude', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
+            $this->handleServiceGuzzleException('Claude', $e, $options['apiKey'], $logOptions, $options['model'], false, $this->logger);
             yield 'Claude - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available');
         }
     }

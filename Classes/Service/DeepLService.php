@@ -19,6 +19,7 @@ use TYPO3\CMS\Core\Localization\LanguageService;
 class DeepLService extends BaseService implements AiConnectorInterface
 {
     private const API_ENDPOINT = 'https://api.deepl.com/v2/translate';
+    private const FREE_API_ENDPOINT = 'https://api-free.deepl.com/v2/translate'; 
     private array $params = [];
     protected LoggerInterface $logger;
     protected LanguageServiceFactory $languageServiceFactory;
@@ -51,6 +52,7 @@ class DeepLService extends BaseService implements AiConnectorInterface
             'tag_handling' => $extConf['deeplTagHandling'] ?? self::DEFAULT_DEEPL_TAG_HANDLING,
             'outline_detection' => (bool)($extConf['deeplOutlineDetection'] ?? self::DEFAULT_DEEPL_OUTLINE_DETECTION),
             'non_splitting_tags' => $extConf['deeplNonSplittingTags'] ?? self::DEFAULT_DEEPL_NON_SPLITTING_TAGS,
+            'apiVersion' => $extConf['deeplApiVersion'] ?? 'free',
         ];
         $this->maxRetries = (int)($extConf['maxRetries'] ?? self::DEFAULT_MAX_RETRIES);
     }
@@ -64,6 +66,11 @@ class DeepLService extends BaseService implements AiConnectorInterface
             $logOptions['auth_key'] = $this->maskApiKey($logOptions['auth_key']);
         }
         $this->logger->info('DeepL info: ', ['target_lang' => $options['target_lang'], 'options' => $logOptions]);
+
+        $endpoint = self::API_ENDPOINT;
+        if (($options['apiVersion'] ?? 'free') === 'free') {
+            $endpoint = self::FREE_API_ENDPOINT;
+        }
 
         $formParams = [
             'auth_key' => $options['apiKey'],
@@ -98,7 +105,7 @@ class DeepLService extends BaseService implements AiConnectorInterface
 
         try {
             $client = new Client();
-            $response = $client->post(self::API_ENDPOINT, [
+            $response = $client->post($endpoint, [
                 'form_params' => $formParams
             ]);
             $body = json_decode((string)$response->getBody(), true);

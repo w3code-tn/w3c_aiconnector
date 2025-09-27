@@ -59,6 +59,10 @@ class GeminiService extends BaseService implements AiConnectorInterface
             'chunkSize' => (int)($extConf['geminiChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),         
         ];
         $this->maxRetries = (int)($extConf['maxRetries'] ?? self::DEFAULT_MAX_RETRIES);
+
+        if($extConf['geminiFallbackModels'] ?? false) {
+            $this->fallbacks['gemini'] = $this->getExtConfFallbackModel($extConf['geminiFallbackModels']);
+        }
     }
 
     public function process(string $prompt, array $options = []): ?string
@@ -99,7 +103,7 @@ class GeminiService extends BaseService implements AiConnectorInterface
                     $this->retryCount++;
                     $this->logger->warning('Gemini 429 or 503 error', ['model' => $options['model'], 'options' => $logOptions]);
                     $options['model'] = $this->fallbackModel('gemini', $options['model']);
-                    $this->process($prompt, $options);
+                    return $this->process($prompt, $options);
                 }
             }
             $this->handleServiceRequestException('Gemini', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
@@ -176,6 +180,16 @@ class GeminiService extends BaseService implements AiConnectorInterface
             }
 
         } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if (($statusCode === 429 || $statusCode === 503) && $this->retryCount < $this->maxRetries && !empty($this->fallbacks['gemini'])) {
+                    $this->retryCount++;
+                    $this->logger->warning('Gemini 429 or 503 error, trying fallback', ['model' => $options['model'], 'options' => $logOptions]);
+                    $options['model'] = $this->fallbackModel('gemini', $options['model']);
+                    yield from $this->streamProcess($prompt, $options);
+                    return;
+                }
+            }
             $this->handleServiceRequestException('Gemini', $e, $options['apiKey'], $logOptions, $options['model'], true, $this->logger);
             yield 'Gemini - ' . $this->languageService->sL('LLL:EXT:w3c_aiconnector/Resources/Private/Language/locallang.xlf:not_available');
         } catch (GuzzleException $e) {

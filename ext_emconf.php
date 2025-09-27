@@ -16,4 +16,5 @@ $EM_CONF[$_EXTKEY] = [
         'conflicts' => [],
         'suggests' => [],
     ],
+    'icon' => 'Resources/Public/Icons/Extension.svg',
 ];
