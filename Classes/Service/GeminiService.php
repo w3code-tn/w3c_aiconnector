@@ -56,7 +56,8 @@ class GeminiService extends BaseService implements AiConnectorInterface
                 'maxOutputTokens' => (int)($extConf['geminiMaxOutputTokens'] ?? self::DEFAULT_GEMINI_MAX_OUTPUT_TOKENS),
                 'stopSequences' => $extConf['geminiStopSequences'] ? explode(',', $extConf['geminiStopSequences']) : self::DEFAULT_GEMINI_STOP_SEQUENCES,
             ],
-            'chunkSize' => (int)($extConf['geminiChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),         
+            'chunkSize' => (int)($extConf['geminiChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),  
+            'maxInputTokensAllowed' => (int)($extConf['geminiMaxInputTokensAllowed'] ?? self::MAX_INPUT_TOKENS_ALLOWED),   
         ];
         $this->maxRetries = (int)($extConf['maxRetries'] ?? self::DEFAULT_MAX_RETRIES);
 
@@ -132,7 +133,8 @@ class GeminiService extends BaseService implements AiConnectorInterface
         $this->logger->info('Gemini stream info: ', ['model' => $options['model'], 'options' => $logOptions]);
 
         $client = new Client();
-        $url = self::API_URL . $options['model'] . self::API_URL_STREAM_SUFFIX . $options['apiKey'];
+        // Correction de la construction de l'URL pour séparer le suffixe de la clé API
+        $url = self::API_URL . $options['model'] . self::API_URL_STREAM_SUFFIX  . $options['apiKey'];
 
         $payload = [
             'contents' => [
@@ -144,41 +146,43 @@ class GeminiService extends BaseService implements AiConnectorInterface
         try {
             $response = $client->request('POST', $url, [
                 'json' => $payload,
-                'stream' => true, // Option Guzzle pour activer le streaming
+                'stream' => true,
             ]);
 
             $body = $response->getBody();
-            $braceLevel = 0;
-            $currentObject = '';
+            $buffer = '';
 
-            // --- 4. Traitement du flux de réponse ---
             while (!$body->eof()) {
-                $chunk = $body->read(self::DEFAULT_STREAM_CHUNK_SIZE);
-                for ($i = 0; $i < strlen($chunk); $i++) {
-                    $char = $chunk[$i];
+                $buffer .= $body->read($options['chunkSize'] ?? 2048); // Lire un morceau
 
-                    if ($braceLevel > 0) $currentObject .= $char;
-                    if ($char === '{') {
-                        if ($braceLevel === 0) $currentObject = '{';
-                        $braceLevel++;
-                    } elseif ($char === '}') {
-                        $braceLevel--;
-                        if ($braceLevel === 0 && !empty($currentObject)) {
-                            $data = json_decode($currentObject, true);
-                            if (json_last_error() === JSON_ERROR_NONE) {
-                                $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
-                                if ($text) {
-                                    yield $text;
-                                    if (ob_get_level() > 0) ob_flush();
-                                    flush();
-                                }
-                            }
-                            $currentObject = '';
+                // NOUVELLE LOGIQUE : On cherche des objets JSON complets dans le buffer
+                // On considère qu'un objet se termine par '}'. On split donc par ce caractère.
+
+                $tempBuffer = substr($buffer, strpos($buffer, '{'));
+                $potentialObjects = explode('}',  $tempBuffer);
+                $lastElement = array_pop($potentialObjects);
+                $potentialJson = implode('}', $potentialObjects).'}';
+
+                if(json_validate($potentialJson)){
+                    // Le dernier élément du tableau est ce qui reste après le dernier '}'.
+                    // C'est soit une chaîne vide, soit un début d'objet JSON. On le garde pour la prochaine itération.
+                    $buffer = $lastElement;
+
+                    $decoded = json_decode($potentialJson, true);
+
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        // C'est un JSON valide ! On l'exploite.
+                        if (isset($decoded['candidates'][0]['content']['parts'][0]['text'])) {
+                            yield $decoded['candidates'][0]['content']['parts'][0]['text'];
+                        }
+
+                        // La condition pour arrêter reste la même et est toujours aussi importante.
+                        if (isset($decoded['usageMetadata'])) {
+                          //  break; // Sortir de la boucle foreach ET de la boucle while
                         }
                     }
                 }
-            }
-
+            }   
         } catch (RequestException $e) {
             if ($e->hasResponse()) {
                 $statusCode = $e->getResponse()->getStatusCode();

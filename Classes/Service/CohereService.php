@@ -54,6 +54,7 @@ class CohereService extends BaseService implements AiConnectorInterface
             'preamble' => $extConf['coherePreamble'] ?? self::DEFAULT_COHERE_PREAMBLE,
             'chatHistory' => [], // Cohere expects an array of messages for chat_history
             'chunkSize' => (int)($extConf['cohereChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
+            'maxInputTokensAllowed' => (int)($extConf['cohereMaxInputTokensAllowed'] ?? self::MAX_INPUT_TOKENS_ALLOWED),
         ];
         $this->maxRetries = (int)($extConf['maxRetries'] ?? self::DEFAULT_MAX_RETRIES);
 
@@ -193,10 +194,27 @@ class CohereService extends BaseService implements AiConnectorInterface
             ]);
 
             $body = $response->getBody();
+            $buffer = '';
             while (!$body->eof()) {
-                $line = $body->read(1024);
-                $data = json_decode($line, true);
-                if (isset($data['event_type']) && $data['event_type'] === 'text-generation' && isset($data['text'])) {
+                $buffer .= $body->read($options['chunkSize']); // Read a larger chunk into buffer
+                while (($newlinePos = strpos($buffer, "\n")) !== false) {
+                    $line = substr($buffer, 0, $newlinePos);
+                    $buffer = substr($buffer, $newlinePos + 1); // Remove processed line from buffer
+
+                    // Only process non-empty lines that might contain JSON
+                    if (trim($line) !== '') {
+                        $data = json_decode($line, true);
+                        // Check for JSON decoding errors and the expected structure
+                        if (json_last_error() === JSON_ERROR_NONE && isset($data['event_type']) && $data['event_type'] === 'text-generation' && isset($data['text'])) {
+                            yield $data['text'];
+                        }
+                    }
+                }
+            }
+            // After loop, if there's any remaining buffer, try to process it as a final chunk
+            if (trim($buffer) !== '') {
+                $data = json_decode($buffer, true);
+                if (json_last_error() === JSON_ERROR_NONE && isset($data['event_type']) && $data['event_type'] === 'text-generation' && isset($data['text'])) {
                     yield $data['text'];
                 }
             }

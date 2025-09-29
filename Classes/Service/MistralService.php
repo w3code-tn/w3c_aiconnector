@@ -50,6 +50,7 @@ class MistralService extends BaseService implements AiConnectorInterface
             'stream' => (bool)($extConf['mistralStream'] ?? self::DEFAULT_MISTRAL_STREAM),
             'safePrompt' => (bool)($extConf['mistralSafePrompt'] ?? self::DEFAULT_MISTRAL_SAFE_PROMPT),
             'chunkSize' => (int)($extConf['mistralChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
+            'maxInputTokensAllowed' => (int)($extConf['mistralMaxInputTokensAllowed'] ?? self::MAX_INPUT_TOKENS_ALLOWED),
         ];
         $this->maxRetries = (int)($extConf['maxRetries'] ?? self::DEFAULT_MAX_RETRIES);
 
@@ -162,16 +163,24 @@ class MistralService extends BaseService implements AiConnectorInterface
             ]);
 
             $body = $response->getBody();
+            $buffer = '';
             while (!$body->eof()) {
-                $line = $body->read(1024);
-                if (str_starts_with($line, 'data: ')) {
-                    $json = trim(substr($line, 5));
-                    if ($json === '[DONE]') {
-                        break;
-                    }
-                    $data = json_decode($json, true);
-                    if (isset($data['choices'][0]['delta']['content'])) {
-                        yield $data['choices'][0]['delta']['content'];
+                $buffer .= $body->read($options['chunkSize']);
+                while (($pos = strpos($buffer, "\n\n")) !== false) {
+                    $eventData = substr($buffer, 0, $pos);
+                    $buffer = substr($buffer, $pos + 2);
+
+                    foreach (explode("\n", $eventData) as $line) {
+                        if (str_starts_with($line, 'data: ')) {
+                            $json = trim(substr($line, 5));
+                            if ($json === '[DONE]') {
+                                break 2; // Break out of both while loops
+                            }
+                            $data = json_decode($json, true);
+                            if (isset($data['choices'][0]['delta']['content'])) {
+                                yield $data['choices'][0]['delta']['content'];
+                            }
+                        }
                     }
                 }
             }
@@ -179,6 +188,7 @@ class MistralService extends BaseService implements AiConnectorInterface
             if ($e->hasResponse()) {
                 $statusCode = $e->getResponse()->getStatusCode();
                 if (($statusCode === 429 || $statusCode === 503) && !empty($this->fallbacks['mistral'])) {
+                    $this->retryCount++;
                     $this->logger->warning('Mistral 429 or 503 error, trying fallback', ['model' => $options['model'], 'options' => $logOptions]);
                     $options['model'] = $this->fallbackModel('mistral', $options['model']);
                     yield from $this->streamProcess($prompt, $options);

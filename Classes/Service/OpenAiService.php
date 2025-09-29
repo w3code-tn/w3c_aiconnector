@@ -48,6 +48,7 @@ class OpenAiService extends BaseService implements AiConnectorInterface
             'stop' => $extConf['openAiStop'] ? GeneralUtility::trimExplode(',', $extConf['openAiStop'], true) : self::DEFAULT_OPENAI_STOP,
             'stream' => (bool)($extConf['openAiStream'] ?? self::DEFAULT_OPENAI_STREAM),
             'chunkSize' => (int)($extConf['openAiChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
+            'maxInputTokensAllowed' => (int)($extConf['openAiMaxInputTokensAllowed'] ?? self::MAX_INPUT_TOKENS_ALLOWED),
         ];
         $this->maxRetries = (int)($extConf['maxRetries'] ?? self::DEFAULT_MAX_RETRIES);
 
@@ -147,16 +148,24 @@ class OpenAiService extends BaseService implements AiConnectorInterface
             ]);
 
             $body = $response->getBody();
+            $buffer = '';
             while (!$body->eof()) {
-                $line = $body->read(1024);
-                if (str_starts_with($line, 'data: ')) {
-                    $json = trim(substr($line, 5));
-                    if ($json === '[DONE]') {
-                        break;
-                    }
-                    $data = json_decode($json, true);
-                    if (isset($data['output'][0]['content'][0]['text'])) {
-                        yield $data['output'][0]['content'][0]['text'];
+                $buffer .= $body->read(1024);
+                while (($pos = strpos($buffer, "\n\n")) !== false) {
+                    $eventData = substr($buffer, 0, $pos);
+                    $buffer = substr($buffer, $pos + 2);
+
+                    foreach (explode("\n", $eventData) as $line) {
+                        if (str_starts_with($line, 'data: ')) {
+                            $json = trim(substr($line, 5));
+                            if ($json === '[DONE]') {
+                                break 2; // Exit both loops
+                            }
+                            $data = json_decode($json, true);
+                            if (isset($data['choices'][0]['delta']['content'])) {
+                                yield $data['choices'][0]['delta']['content'];
+                            }
+                        }
                     }
                 }
             }

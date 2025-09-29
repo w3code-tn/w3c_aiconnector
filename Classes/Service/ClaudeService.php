@@ -52,6 +52,7 @@ class ClaudeService extends BaseService implements AiConnectorInterface
             'topP' => (float)($extConf['claudeTopP'] ?? self::DEFAULT_CLAUDE_TOP_P),
             'topK' => (int)($extConf['claudeTopK'] ?? self::DEFAULT_CLAUDE_TOP_K),
             'chunkSize' => (int)($extConf['claudeChunkSize'] ?? self::DEFAULT_STREAM_CHUNK_SIZE),
+            'maxInputTokensAllowed' => (int)($extConf['claudeMaxInputTokensAllowed'] ?? self::MAX_INPUT_TOKENS_ALLOWED),
         ];
         $this->maxRetries = (int)($extConf['maxRetries'] ?? self::DEFAULT_MAX_RETRIES);
 
