@@ -19,7 +19,6 @@ use TYPO3\CMS\Core\Localization\LanguageService;
 class ClaudeService extends BaseService implements AiConnectorInterface
 {
     private const API_ENDPOINT = 'https://api.anthropic.com/v1/messages';
-    private array $params = [];
     protected LoggerInterface $logger;
     protected LanguageServiceFactory $languageServiceFactory;
     protected ?LanguageService $languageService = null;

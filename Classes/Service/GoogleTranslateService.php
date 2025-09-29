@@ -18,7 +18,6 @@ use TYPO3\CMS\Core\Localization\LanguageService;
 
 class GoogleTranslateService extends BaseService implements AiConnectorInterface
 {
-    private array $params = [];
     protected LoggerInterface $logger;
     protected LanguageServiceFactory $languageServiceFactory;
     protected ?LanguageService $languageService = null;

@@ -34,6 +34,9 @@ geminiChunkSize = 100
 # cat=Gemini; type=string; label=Gemini Fallback Models: Comma-separated list of Gemini models to use as fallback.
 geminiFallbackModels = gemini-2.5-pro, gemini-2.5-flash, gemini-2.0-flash
 
+# cat=Gemini; type=int; label=Gemini Max Input Tokens Allowed: The max input tokens allowed for the Gemini model.
+geminiMaxInputTokensAllowed = 1000000
+
 # cat=OpenAi; type=string; label=OpenAI API Key: Your OpenAI API key.
 openAiApiKey = 
 
@@ -57,6 +60,9 @@ openAiChunkSize = 100
 
 # cat=OpenAi; type=string; label=OpenAI Fallback Models: Comma-separated list of OpenAI models to use as fallback.
 openAiFallbackModels = 
+
+# cat=OpenAi; type=int; label=OpenAI Max Input Tokens Allowed: The max input tokens allowed for the OpenAI model.
+openAiMaxInputTokensAllowed = 128000
 
 # cat=Claude; type=string; label=Claude API Key: Your Claude API key.
 claudeApiKey = 
@@ -91,6 +97,9 @@ claudeChunkSize = 100
 # cat=Claude; type=string; label=Claude Fallback Models: Comma-separated list of Claude models to use as fallback.
 claudeFallbackModels = claude-opus-4-1-20250805, claude-opus-4-20250514, claude-sonnet-4-20250514, claude-3-7-sonnet-20250219, claude-3-5-haiku-20241022, claude-3-5-haiku-20241022
 
+# cat=Claude; type=int; label=Claude Max Input Tokens Allowed: The max input tokens allowed for the Claude model.
+claudeMaxInputTokensAllowed = 200000
+
 # cat=Mistral; type=string; label=Mistral API Key: Your Mistral API key.
 mistralApiKey = 
 
@@ -120,6 +129,9 @@ mistralChunkSize = 100
 
 # cat=Mistral; type=string; label=Mistral Fallback Models: Comma-separated list of Mistral models to use as fallback.
 mistralFallbackModels = 
+
+# cat=Mistral; type=int; label=Mistral Max Input Tokens Allowed: The max input tokens allowed for the Mistral model.
+mistralMaxInputTokensAllowed = 32768
 
 # cat=Cohere; type=string; label=Cohere API Key: Your Cohere API key.
 cohereApiKey = 
@@ -156,6 +168,9 @@ cohereChunkSize = 100
 
 # cat=Cohere; type=string; label=Cohere Fallback Models: Comma-separated list of Cohere models to use as fallback.
 cohereFallbackModels = command-a-03-2025, command-r7b-12-2024, command-a-reasoning-08-2025, command-a-vision-07-2025, command-r-08-2024, command-r-plus-08-2024
+
+# cat=Cohere; type=int; label=Cohere Max Input Tokens Allowed: The max input tokens allowed for the Cohere model.
+cohereMaxInputTokensAllowed = 128000
 
 # cat=DeepL; type=string; label=DeepL API Key: Your DeepL API key.
 deeplApiKey = 
@@ -216,6 +231,9 @@ ollamaChunkSize = 100
 
 # cat=Ollama; type=string; label=Ollama Fallback Models: Comma-separated list of Ollama models to use as fallback.
 ollamaFallbackModels = 
+
+# cat=Ollama; type=int; label=Ollama Max Input Tokens Allowed: The max input tokens allowed for the Ollama model.
+ollamaMaxInputTokensAllowed = 8192
 
 # cat=GoogleTranslate; type=string; label=Google Translate API Key: Your Google Translate API key.
 googleTranslateApiKey = 

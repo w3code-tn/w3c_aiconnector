@@ -21,7 +21,6 @@ class GeminiService extends BaseService implements AiConnectorInterface
     private const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/';
     private const API_URL_SUFFIX = ':generateContent?key=';
     private const API_URL_STREAM_SUFFIX = ':streamGenerateContent?key=';
-    private array $params = [];
 
     protected LoggerInterface $logger;
     protected LanguageServiceFactory $languageServiceFactory;

@@ -18,7 +18,6 @@ use TYPO3\CMS\Core\Localization\LanguageService;
 
 class OllamaService extends BaseService implements AiConnectorInterface
 {
-    private array $params = [];
     protected LoggerInterface $logger;
     protected LanguageServiceFactory $languageServiceFactory;
     protected ?LanguageService $languageService = null;
@@ -183,7 +182,6 @@ class OllamaService extends BaseService implements AiConnectorInterface
                     // Only process non-empty lines that might contain JSON
                     if (trim($line) !== '') {
                         $data = json_decode($line, true);
-                        $this->logger->info('Ollama stream line: ' . $line);
                         if (json_last_error() === JSON_ERROR_NONE && isset($data['response'])) {
                             yield $data['response'];
                         }

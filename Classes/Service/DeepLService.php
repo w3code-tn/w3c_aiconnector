@@ -20,7 +20,6 @@ class DeepLService extends BaseService implements AiConnectorInterface
 {
     private const API_ENDPOINT = 'https://api.deepl.com/v2/translate';
     private const FREE_API_ENDPOINT = 'https://api-free.deepl.com/v2/translate'; 
-    private array $params = [];
     protected LoggerInterface $logger;
     protected LanguageServiceFactory $languageServiceFactory;
     protected ?LanguageService $languageService = null;
