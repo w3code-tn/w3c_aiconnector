@@ -71,7 +71,7 @@ class OllamaService extends BaseService implements AiConnectorInterface
             $requestBody = [
                 'model' => $options['model'],
                 'prompt' => $prompt,
-                'stream' => $options['stream'],
+                'stream' => false,
             ];
 
             $ollamaOptions = [];
@@ -99,9 +99,14 @@ class OllamaService extends BaseService implements AiConnectorInterface
             }
 
             $response = $client->post($options['endPoint'] . '/api/generate', [
-                'json' => $requestBody
+                'headers' => [
+                    'Expect' => ''
+                ],
+                'json' => $requestBody,
+                'timeout' => 300,
             ]);
-            $body = json_decode((string)$response->getBody(), true);
+            $body = json_decode((string)$response->getBody()->getContents(), true);
+
             return $body['response'] ?? null;
 
         } catch (RequestException $e) {
@@ -162,13 +167,16 @@ class OllamaService extends BaseService implements AiConnectorInterface
 
         try {
             $response = $client->post($options['endPoint'] . '/api/generate', [
+                'headers' => [
+                    'Expect' => ''
+                ],
                 'json' => $requestBody,
-                'stream' => true,
+                'timeout' => 300,
             ]);
 
             $body = $response->getBody();
             while (!$body->eof()) {
-                $line = $body->read(1024);
+                $line = $body->read($options['chunkSize']);
                 $data = json_decode($line, true);
                 if (isset($data['response'])) {
                     yield $data['response'];
@@ -179,7 +187,7 @@ class OllamaService extends BaseService implements AiConnectorInterface
                 $statusCode = $e->getResponse()->getStatusCode();
                 if (($statusCode === 429 || $statusCode === 503) && !empty($this->fallbacks['ollama'])) {
                     $this->logger->warning('Ollama 429 or 503 error, trying fallback', ['model' => $options['model'], 'options' => $logOptions]);
-                    $options['model'] = $this->fallbackModel('ollama', $options['model']);
+                    //$options['model'] = $this->fallbackModel('ollama', $options['model']);
                     yield from $this->streamProcess($prompt, $options);
                     return;
                 }
