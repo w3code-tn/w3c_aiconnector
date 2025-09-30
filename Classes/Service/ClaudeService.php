@@ -43,7 +43,7 @@ class ClaudeService extends BaseService implements AiConnectorInterface
             'apiKey' => $extConf['claudeApiKey'] ?? '',
             'model' => $extConf['claudeModelName'] ?? self::DEFAULT_CLAUDE_MODEL,
             'apiVersion' => $extConf['claudeApiVersion'] ?? self::DEFAULT_CLAUDE_API_VERSION,
-            'maxTokens' => $extConf['claudeMaxTokens'] ?? self::DEFAULT_CLAUDE_MAX_TOKENS,
+            'maxTokens' => (int)($extConf['claudeMaxTokens'] ?? self::DEFAULT_CLAUDE_MAX_TOKENS),
             'system' => $extConf['claudeSystem'] ?? self::DEFAULT_CLAUDE_SYSTEM,
             'stopSequences' => $extConf['claudeStopSequences'] ? explode(',', $extConf['claudeStopSequences']) : self::DEFAULT_CLAUDE_STOP_SEQUENCES,
             'stream' => (bool)($extConf['claudeStream'] ?? self::DEFAULT_CLAUDE_STREAM),
