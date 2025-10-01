@@ -9,6 +9,9 @@ services:
     exclude:
     - '../Classes/Domain/Model/*'
 
+  W3code\W3cAiconnector\Service\SolrService:
+    public: true
+
   W3code\W3cAiconnector\Service\GeminiService:
     public: true
     arguments:
