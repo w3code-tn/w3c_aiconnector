@@ -37,8 +37,6 @@ class SolrService
             $response = $client->get($solrUrl);
             $solrData = json_decode((string)$response->getBody(), true);
             $results = $solrData['response']['docs'] ?? [];
-            $variantIds = array_map(fn($result) => $result['variantId'] ?? null, $results);
-            $this->logger->info('Solr Results', ['variantIds' => $variantIds]);
         } catch (GuzzleException $e) {
             $this->logger->error('Solr Error', ['error' => $e->getMessage()]);
         }
