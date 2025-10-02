@@ -252,3 +252,18 @@ googleTranslateModel =
 
 # cat=GoogleTranslate; type=string; label=Google Translate Custom Model ID: The custom model ID to use for translation (optional).
 googleTranslateCid = 
+
+# cat=Solr; type=boolean; label=Enable Highlighting: If checked, Solr will return highlighted snippets instead of the full content.
+hl_enabled = 1
+
+# cat=Solr; type=string; label=Highlighting Fields: Comma-separated list of fields to generate snippets from.
+hl_fl = contenu
+
+# cat=Solr; type=int; label=Number of Snippets: The maximum number of highlighted snippets to generate per field.
+hl_snippets = 3
+
+# cat=Solr; type=int; label=Fragment Size: The approximate size, in characters, of the snippets.
+hl_fragsize = 1000
+
+# cat=Solr; type=boolean; label=Merge Contiguous Fragments: If enabled, adjacent snippets are merged into one.
+hl_mergeContiguous = 1
