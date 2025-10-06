@@ -5,7 +5,7 @@ provider = gemini
 maxRetries = 5
 
 # cat=Gemini; type=string; label=Gemini API Key: Your Google Gemini API key.
-geminiApiKey = 
+geminiApiKey =
 
 # cat=Gemini; type=string; label=Gemini Model Name: The Gemini model to use.
 geminiModelName = gemini-2.0-flash
@@ -26,7 +26,7 @@ geminiCandidateCount = 1
 geminiMaxOutputTokens = 1024
 
 # cat=Gemini; type=string; label=Gemini Stop Sequences: The stop sequences for the Gemini model (comma separated).
-geminiStopSequences = 
+geminiStopSequences =
 
 # cat=Gemini; type=int; label=Gemini Chunk Size: The chunk size when using stream mode
 geminiChunkSize = 100
@@ -38,7 +38,7 @@ geminiFallbackModels = gemini-2.5-pro, gemini-2.5-flash, gemini-2.0-flash
 geminiMaxInputTokensAllowed = 1000000
 
 # cat=OpenAi; type=string; label=OpenAI API Key: Your OpenAI API key.
-openAiApiKey = 
+openAiApiKey =
 
 # cat=OpenAi; type=string; label=OpenAI Model Name: The OpenAI model to use.
 openAiModelName = gpt-4o
@@ -53,19 +53,19 @@ openAiTopP = 1.0
 openAiMaxOutputTokens = 1024
 
 # cat=OpenAi; type=string; label=OpenAI Stop: The stop sequences for the OpenAI model (comma separated).
-openAiStop = 
+openAiStop =
 
 # cat=OpenAi; type=int; label=OpenAi Chunk Size: The chunk size when using stream mode
 openAiChunkSize = 100
 
 # cat=OpenAi; type=string; label=OpenAI Fallback Models: Comma-separated list of OpenAI models to use as fallback.
-openAiFallbackModels = 
+openAiFallbackModels =
 
 # cat=OpenAi; type=int; label=OpenAI Max Input Tokens Allowed: The max input tokens allowed for the OpenAI model.
 openAiMaxInputTokensAllowed = 128000
 
 # cat=Claude; type=string; label=Claude API Key: Your Claude API key.
-claudeApiKey = 
+claudeApiKey =
 
 # cat=Claude; type=string; label=Claude Model Name: The Claude model to use.
 claudeModelName = claude-opus-4-1-20250805
@@ -76,11 +76,11 @@ claudeApiVersion = 2023-06-01
 # cat=Claude; type=int; label=Claude Max Tokens: The maximum number of tokens to generate.
 claudeMaxTokens = 1024
 
-# cat=Claude; type=string; label=Claude System Prompt: The system prompt for the Claude model. 
-claudeSystem = 
+# cat=Claude; type=string; label=Claude System Prompt: The system prompt for the Claude model.
+claudeSystem =
 
 # cat=Claude; type=string; label=Claude Stop Sequences: The stop sequences for the Claude model (comma separated).
-claudeStopSequences = 
+claudeStopSequences =
 
 # cat=Claude; type=float; label=Claude Temperature: The temperature for the Claude model.
 claudeTemperature = 1.0
@@ -101,7 +101,7 @@ claudeFallbackModels = claude-opus-4-1-20250805, claude-opus-4-20250514, claude-
 claudeMaxInputTokensAllowed = 200000
 
 # cat=Mistral; type=string; label=Mistral API Key: Your Mistral API key.
-mistralApiKey = 
+mistralApiKey =
 
 # cat=Mistral; type=string; label=Mistral Model Name: The Mistral model to use.
 mistralModelName = mistral-large-latest
@@ -116,7 +116,7 @@ mistralTopP = 1.0
 mistralMaxTokens = 1024
 
 # cat=Mistral; type=string; label=Mistral Stop: The stop sequences for the Mistral model (comma separated).
-mistralStop = 
+mistralStop =
 
 # cat=Mistral; type=int; label=Mistral Random Seed: The random seed for the Mistral model.
 mistralRandomSeed = 0
@@ -128,13 +128,13 @@ mistralSafePrompt = 0
 mistralChunkSize = 100
 
 # cat=Mistral; type=string; label=Mistral Fallback Models: Comma-separated list of Mistral models to use as fallback.
-mistralFallbackModels = 
+mistralFallbackModels =
 
 # cat=Mistral; type=int; label=Mistral Max Input Tokens Allowed: The max input tokens allowed for the Mistral model.
 mistralMaxInputTokensAllowed = 32768
 
 # cat=Cohere; type=string; label=Cohere API Key: Your Cohere API key.
-cohereApiKey = 
+cohereApiKey =
 
 # cat=Cohere; type=string; label=Cohere Model Name: The Cohere model to use.
 cohereModelName = command-a-03-2025
@@ -158,10 +158,10 @@ cohereFrequencyPenalty = 0.0
 coherePresencePenalty = 0.0
 
 # cat=Cohere; type=string; label=Cohere Stop Sequences: The stop sequences for the Cohere model (comma separated).
-cohereStopSequences = 
+cohereStopSequences =
 
 # cat=Cohere; type=string; label=Cohere Preamble: The preamble for the Cohere model.
-coherePreamble = 
+coherePreamble =
 
 # cat=Cohere; type=int; label=Cohere Chunk Size: The chunk size when using stream mode
 cohereChunkSize = 100
@@ -173,10 +173,10 @@ cohereFallbackModels = command-a-03-2025, command-r7b-12-2024, command-a-reasoni
 cohereMaxInputTokensAllowed = 128000
 
 # cat=DeepL; type=string; label=DeepL API Key: Your DeepL API key.
-deeplApiKey = 
+deeplApiKey =
 
 # cat=DeepL; type=string; label=DeepL Source Language: The source language for DeepL (optional).
-deeplSourceLang = 
+deeplSourceLang =
 
 # cat=DeepL; type=options[0,1,nonewlines]; label=DeepL Split Sentences: How sentences should be split.
 deeplSplitSentences = 1
@@ -188,16 +188,16 @@ deeplPreserveFormatting = 0
 deeplFormality = default
 
 # cat=DeepL; type=string; label=DeepL Glossary ID: ID of a glossary to use.
-deeplGlossaryId = 
+deeplGlossaryId =
 
 # cat=DeepL; type=options[xml,html]; label=DeepL Tag Handling: Type of tags to handle.
-deeplTagHandling = 
+deeplTagHandling =
 
 # cat=DeepL; type=boolean; label=DeepL Outline Detection: Detect XML structure.
 deeplOutlineDetection = 0
 
 # cat=DeepL; type=string; label=DeepL Non Splitting Tags: Comma-separated list of tags that should not be split.
-deeplNonSplittingTags = 
+deeplNonSplittingTags =
 
 # cat=DeepL; type=options[pro,free]; label=DeepL API Version: Select the DeepL API version to use (pro or free).
 deeplApiVersion = free
@@ -218,40 +218,40 @@ ollamaTopP = 0.9
 ollamaNumPredict = 1024
 
 # cat=Ollama; type=string; label=Ollama Stop: The stop sequences for the Ollama model (comma separated).
-ollamaStop = 
+ollamaStop =
 
 # cat=Ollama; type=string; label=Ollama Format: The format for the Ollama model (e.g., json).
-ollamaFormat = 
+ollamaFormat =
 
 # cat=Ollama; type=string; label=Ollama System: The system prompt for the Ollama model.
-ollamaSystem = 
+ollamaSystem =
 
 # cat=Ollama; type=int; label=Ollama Chunk Size: The chunk size when using stream mode
 ollamaChunkSize = 100
 
 # cat=Ollama; type=string; label=Ollama Fallback Models: Comma-separated list of Ollama models to use as fallback.
-ollamaFallbackModels = 
+ollamaFallbackModels =
 
 # cat=Ollama; type=int; label=Ollama Max Input Tokens Allowed: The max input tokens allowed for the Ollama model.
 ollamaMaxInputTokensAllowed = 8192
 
 # cat=GoogleTranslate; type=string; label=Google Translate API Key: Your Google Translate API key.
-googleTranslateApiKey = 
+googleTranslateApiKey =
 
 # cat=GoogleTranslate; type=string; label=Google Translate Target Language: The target language for Google Translate.
 googleTranslateTargetLang = en
 
 # cat=GoogleTranslate; type=string; label=Google Translate Source Language: The source language for Google Translate (optional).
-googleTranslateSourceLang = 
+googleTranslateSourceLang =
 
 # cat=GoogleTranslate; type=options[html,text]; label=Google Translate Format: The format of the text to be translated.
 googleTranslateFormat = html
 
 # cat=GoogleTranslate; type=string; label=Google Translate Model: The model to use for translation (optional).
-googleTranslateModel = 
+googleTranslateModel =
 
 # cat=GoogleTranslate; type=string; label=Google Translate Custom Model ID: The custom model ID to use for translation (optional).
-googleTranslateCid = 
+googleTranslateCid =
 
 # cat=Solr; type=boolean; label=Enable Highlighting: If checked, Solr will return highlighted snippets instead of the full content.
 hl_enabled = 1

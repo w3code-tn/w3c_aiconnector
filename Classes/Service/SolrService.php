@@ -1,29 +1,41 @@
 <?php
 declare(strict_types=1);
 
-namespace W3code\W3cAiconnector\Service;
+namespace W3code\W3cAIConnector\Service;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Psr\Log\LoggerInterface;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use Psr\Log\LoggerAwareTrait;
+use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationExtensionNotConfiguredException;
+use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationPathDoesNotExistException;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use W3code\W3cAIConnector\Utility\ConfigurationUtility;
 
+/**
+ * Class SolrService
+ */
 class SolrService
 {
+    use LoggerAwareTrait;
+
     private const SOLR_ENDPOINT = 'http://solr:8983/solr/';
+    private array $config;
 
-    private LoggerInterface $logger;
-    private array $extConf;
-
-    public function __construct(LoggerInterface $logger)
+    /**
+     * @throws ExtensionConfigurationPathDoesNotExistException
+     * @throws ExtensionConfigurationExtensionNotConfiguredException
+     */
+    public function __construct()
     {
-        $this->logger = $logger;
-        $this->extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class)
-            ->get('w3c_aiconnector');
+        $this->config = ConfigurationUtility::getExtensionConfiguration();
     }
 
+    /**
+     * @param string $keywords
+     * @param SiteLanguage $siteLanguage
+     * @param array $filters
+     * @return array
+     */
     public function search(string $keywords, SiteLanguage $siteLanguage, array $filters = []): array
     {
         $solrCore = 'core_' . strtolower($siteLanguage->getHreflang());
@@ -36,18 +48,18 @@ class SolrService
             $this->logger->info('Solr Filters', ['filters' => $filters]);
         }
 
-        if (!empty($this->extConf['hl_enabled'])) {
+        if (!empty($this->config['hl_enabled'])) {
             $solrUrl .= '&hl=true';
-            if (!empty($this->extConf['hl_fl'])) {
-                $solrUrl .= '&hl.fl=' . urlencode($this->extConf['hl_fl']);
+            if (!empty($this->config['hl_fl'])) {
+                $solrUrl .= '&hl.fl=' . urlencode($this->config['hl_fl']);
             }
-            if (!empty($this->extConf['hl_snippets'])) {
-                $solrUrl .= '&hl.snippets=' . (int)$this->extConf['hl_snippets'];
+            if (!empty($this->config['hl_snippets'])) {
+                $solrUrl .= '&hl.snippets=' . (int)$this->config['hl_snippets'];
             }
-            if (!empty($this->extConf['hl_fragsize'])) {
-                $solrUrl .= '&hl.fragsize=' . (int)$this->extConf['hl_fragsize'];
+            if (!empty($this->config['hl_fragsize'])) {
+                $solrUrl .= '&hl.fragsize=' . (int)$this->config['hl_fragsize'];
             }
-            if (!empty($this->extConf['hl_mergeContiguous'])) {
+            if (!empty($this->config['hl_mergeContiguous'])) {
                 $solrUrl .= '&hl.mergeContiguous=true';
             }
         }
@@ -59,9 +71,9 @@ class SolrService
             $solrData = json_decode((string)$response->getBody(), true);
 
             $docs = $solrData['response']['docs'] ?? [];
-            if (!empty($this->extConf['hl_enabled']) && isset($solrData['highlighting'])) {
+            if (!empty($this->config['hl_enabled']) && isset($solrData['highlighting'])) {
                 $highlighting = $solrData['highlighting'];
-                $highlightField = $this->extConf['hl_fl'] ?? 'contenu';
+                $highlightField = $this->config['hl_fl'] ?? 'contenu';
 
                 foreach ($docs as &$doc) {
                     $id = $doc['id'];

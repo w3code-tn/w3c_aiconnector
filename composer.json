@@ -14,7 +14,7 @@
     },
     "autoload": {
         "psr-4": {
-            "W3code\\W3cAiconnector\\": "Classes/"
+            "W3code\\W3cAIConnector\\": "Classes/"
         }
     },
     "config": {
