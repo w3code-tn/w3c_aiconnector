@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace W3code\W3cAiconnector\Service;
 
-use Psr\Log\LoggerInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
@@ -14,34 +13,37 @@ abstract class AbstractAiService
 {
     protected AiConnectorFactory $aiConnectorFactory;
     protected LanguageServiceFactory $languageServiceFactory;
-    protected SolrService $solrService;
+    protected SearchServiceFactory $searchServiceFactory;
     protected ?LanguageService $languageService = null;
     protected $aiConnector = null;
 
     public function __construct(
         AiConnectorFactory $aiConnectorFactory,
         LanguageServiceFactory $languageServiceFactory,
-        SolrService $solrService
+        SearchServiceFactory $searchServiceFactory,
+        ?string $provider = null
     ) {
         $this->aiConnectorFactory = $aiConnectorFactory;
         $this->languageServiceFactory = $languageServiceFactory;
-        $this->solrService = $solrService;
-        $this->setAiConnector();
+        $this->searchServiceFactory = $searchServiceFactory;
+        $this->setAiConnector($provider);
     }
 
     abstract protected function getExtensionKey(): string;
 
-    protected function setAiConnector(): void
+    protected function setAiConnector(?string $provider = null): void
     {
-        $extConfAiConnector = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('w3c_aiconnector');
-        $extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get($this->getExtensionKey());
-        $provider = $extConf['provider'] ?? $extConfAiConnector['provider'] ?? '';
+        if (!$provider) {
+            $extConfAiConnector = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('w3c_aiconnector');
+            $extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get($this->getExtensionKey());
+            $provider = $extConf['provider'] ?? $extConfAiConnector['provider'] ?? '';
+        }
         $this->aiConnector = $this->aiConnectorFactory->create($provider);
     }
 
-    protected function searchSolr(string $keywords, SiteLanguage $siteLanguage, array $filters = []): array
+    public function getSearchService(string $serviceName): ?object
     {
-        return $this->solrService->search($keywords, $siteLanguage, $filters);
+        return $this->searchServiceFactory->create($serviceName);
     }
 
     public function truncateGracefully(string $text): string
@@ -58,7 +60,7 @@ abstract class AbstractAiService
         return $text;
     }
 
-    protected function truncateSolrResultsIfNeeded(string $basePrompt, array $results): array
+    protected function truncateSearchResultsIfNeeded(string $basePrompt, array $results): array
     {
         $maxPromptLength = $this->aiConnector->getParams()['maxInputTokensAllowed'];
         $resultStrings = [];
