@@ -7,9 +7,7 @@ namespace W3code\W3cAIConnector\Provider;
 use Generator;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
-use Psr\Log\LoggerAwareTrait;
 use W3code\W3cAIConnector\Client\ClaudeClient;
-use W3code\W3cAIConnector\Utility\ConfigurationUtility;
 use W3code\W3cAIConnector\Utility\LocalizationUtility;
 
 /**
@@ -17,7 +15,6 @@ use W3code\W3cAIConnector\Utility\LocalizationUtility;
  */
 class ClaudeProvider extends AbstractProvider
 {
-    use LoggerAwareTrait;
 
     protected ?ClaudeClient $client = null;
 
@@ -26,35 +23,23 @@ class ClaudeProvider extends AbstractProvider
      *
      * @return void
      */
-    public function setConfig(): void
+    public function setup(): void
     {
         $this->config = [
-            'apiKey' => $this->extConfig['claudeApiKey'] ?? '',
-            'model' => $this->extConfig['claudeModelName'] ?? ConfigurationUtility::getDefaultConfiguration('claudeModelName'),
-            'apiVersion' => $this->extConfig['claudeApiVersion']
-                ?? ConfigurationUtility::getDefaultConfiguration('claudeApiVersion'),
-            'maxTokens' => (int)($this->extConfig['claudeMaxTokens']
-                ?? ConfigurationUtility::getDefaultConfiguration('claudeMaxTokens')),
-            'system' => $this->extConfig['claudeSystem']
-                ?? ConfigurationUtility::getDefaultConfiguration('claudeSystem'),
-            'stopSequences' => $this->extConfig['claudeStopSequences']
-                ? explode(',', $this->extConfig['claudeStopSequences'])
-                : ConfigurationUtility::getDefaultConfiguration('claudeStopSequences'),
-            'stream' => (bool)($this->extConfig['claudeStream']
-                ?? ConfigurationUtility::getDefaultConfiguration('claudeStream')),
-            'temperature' => (float)($this->extConfig['claudeTemperature']
-                ?? ConfigurationUtility::getDefaultConfiguration('claudeTemperature')),
-            'topP' => (float)($this->extConfig['claudeTopP']
-                ?? ConfigurationUtility::getDefaultConfiguration('claudeTopP')),
-            'topK' => (int)($this->extConfig['claudeTopK']
-                ?? ConfigurationUtility::getDefaultConfiguration('claudeTopK')),
-            'chunkSize' => (int)($this->extConfig['claudeChunkSize']
-                ?? ConfigurationUtility::getDefaultConfiguration('claudeChunkSize')),
-            'maxInputTokensAllowed' => (int)($this->extConfig['claudeMaxInputTokensAllowed']
-                ?? ConfigurationUtility::getDefaultConfiguration('maxInputTokensAllowed')),
-            'maxRetries' => (int)($this->extConfig['maxRetries']
-                ?? ConfigurationUtility::getDefaultConfiguration('maxRetries')),
-            'fallbacks' => $this->getFallbackModels($this->extConfig['claudeFallbackModels']) ?? []
+            'apiKey' => $this->extConfig['claudeApiKey'],
+            'model' => $this->extConfig['claudeModelName'],
+            'apiVersion' => $this->extConfig['claudeApiVersion'],
+            'maxTokens' => (int)$this->extConfig['claudeMaxTokens'],
+            'system' => $this->extConfig['claudeSystem'],
+            'stopSequences' => explode(',', $this->extConfig['claudeStopSequences']),
+            'stream' => (bool)$this->extConfig['claudeStream'],
+            'temperature' => (float)$this->extConfig['claudeTemperature'],
+            'topP' => (float)$this->extConfig['claudeTopP'],
+            'topK' => (int)$this->extConfig['claudeTopK'],
+            'chunkSize' => (int)$this->extConfig['claudeChunkSize'],
+            'maxInputTokensAllowed' => (int)$this->extConfig['claudeMaxInputTokensAllowed'],
+            'maxRetries' => (int)$this->extConfig['maxRetries'],
+            'fallbacks' => $this->getFallbackModels($this->extConfig['claudeFallbackModels'])
         ];
     }
 
@@ -67,13 +52,15 @@ class ClaudeProvider extends AbstractProvider
      * @param bool $stream
      * @return string|Generator
      */
-    public function process(string $prompt, array $options = [], int &$retryCount = 0, bool $stream = false): Generator|string
+    public function process(string $prompt, array $options = [], int &$retryCount = 0, bool $stream = false): string|Generator
     {
-        $options = $this->mergeConfigRecursive($options, $this->config);
+        parent::process($prompt, $options, $retryCount, $stream);
 
         $logOptions = $options;
-        unset($logOptions['api_key']);
-        $this->logger->info('Claude' . !$stream ?: 'stream' . 'info: ', ['model' => $options['model'], 'options' => $logOptions]);
+        $this->logger->info(
+            ucfirst($options['model']) . ($stream ? ' stream ' : ' ') . 'info: ',
+            ['model' => $options['model'], 'options' => $logOptions]
+        );
 
         try {
             return $this->client->getContent($prompt, $options, $stream);
@@ -93,5 +80,15 @@ class ClaudeProvider extends AbstractProvider
             $this->handleServiceGuzzleException('Claude', $e, $logOptions, $options['model']);
             return '{error: "Claude - ' . LocalizationUtility::translate('not_available') . '"}';
         }
+    }
+
+    /**
+     * return the current configuration of the provider
+     *
+     * @return array
+     */
+    public function getConfig(): array
+    {
+        return $this->config;
     }
 }

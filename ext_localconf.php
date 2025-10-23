@@ -15,6 +15,7 @@ use W3code\W3cAIConnector\Provider\GoogleTranslateProvider;
 use W3code\W3cAIConnector\Provider\MistralProvider;
 use W3code\W3cAIConnector\Provider\OllamaProvider;
 use W3code\W3cAIConnector\Provider\OpenAIProvider;
+use W3code\W3cAIConnector\Service\SolrService;
 
 (function () {
     $extensionName = 'w3c_aiconnector';
@@ -29,6 +30,8 @@ use W3code\W3cAIConnector\Provider\OpenAIProvider;
     $GLOBALS['TYPO3_CONF_VARS']['EXT'][$extensionName]['openai'] = OpenAIProvider::class;
     $GLOBALS['TYPO3_CONF_VARS']['EXT'][$extensionName]['ollama'] = OllamaProvider::class;
 
+    // AI Services list
+    $GLOBALS['TYPO3_CONF_VARS']['EXT'][$extensionName]['solr'] = SolrService::class;
 
     $GLOBALS['TYPO3_CONF_VARS']['LOG']['W3code']['W3cAIConnector']['Service']['writerConfiguration'] = [
         // Configure for INFO level and higher

@@ -7,9 +7,7 @@ namespace W3code\W3cAIConnector\Provider;
 use Generator;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
-use Psr\Log\LoggerAwareTrait;
 use W3code\W3cAIConnector\Client\GeminiClient;
-use W3code\W3cAIConnector\Utility\ConfigurationUtility;
 use W3code\W3cAIConnector\Utility\LocalizationUtility;
 
 /**
@@ -17,64 +15,69 @@ use W3code\W3cAIConnector\Utility\LocalizationUtility;
  */
 class GeminiProvider extends AbstractProvider
 {
-    use LoggerAwareTrait;
-
+    private const PROVIDER_NAME = 'gemini';
     protected ?GeminiClient $client = null;
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->client = new GeminiClient();
+        $this->setup();
+    }
+
     /**
-     * Set all configuration needed for the AI model provider
+     * sets the configuration for the AI provider
      *
      * @return void
      */
-    public function setConfig(): void
+    public function setup(): void
     {
+        $config = $this->extConfig['gemini'];
         $this->config = [
-            'apiKey' => $this->extConfig['geminiApiKey'] ?? '',
-            'model' => $this->extConfig['geminiModelName'] ?? ConfigurationUtility::getDefaultConfiguration('geminiModelName'),
+            'apiKey' => $config['apiKey'],
+            'model' => $config['modelName'],
             'generationConfig' => [
-                'temperature' => (float)($this->extConfig['geminiTemperature']
-                    ?? ConfigurationUtility::getDefaultConfiguration('geminiTemperature')),
-                'topP' => (float)($this->extConfig['geminiTopP']
-                    ?? ConfigurationUtility::getDefaultConfiguration('geminiTopP')),
-                'topK' => (int)($this->extConfig['geminiTopK']
-                    ?? ConfigurationUtility::getDefaultConfiguration('geminiTopK')),
-                'candidateCount' => (int)($this->extConfig['geminiCandidateCount']
-                    ?? ConfigurationUtility::getDefaultConfiguration('geminiCandidateCount')),
-                'maxOutputTokens' => (int)($this->extConfig['geminiMaxOutputTokens']
-                    ?? ConfigurationUtility::getDefaultConfiguration('geminiMaxOutputTokens')),
-                'stopSequences' => $this->extConfig['geminiStopSequences']
-                    ? explode(',', $this->extConfig['geminiStopSequences'])
-                    : ConfigurationUtility::getDefaultConfiguration('geminiStopSequences'),
+                'temperature' => (float)$config['temperature'],
+                'topP' => (float)$config['topP'],
+                'topK' => (int)$config['topK'],
+                'candidateCount' => (int)$config['candidateCount'],
+                'maxOutputTokens' => (int)$config['maxOutputTokens'],
+                'stopSequences' => empty($config['stopSequences']) ? [] : explode(',', $config['stopSequences']),
             ],
-            'chunkSize' => (int)($this->extConfig['geminiChunkSize']
-                ?? ConfigurationUtility::getDefaultConfiguration('streamChunkSize')),
-            'maxInputTokensAllowed' => (int)($this->extConfig['geminiMaxInputTokensAllowed']
-                ?? ConfigurationUtility::getDefaultConfiguration('maxInputTokensAllowed')),
-            'maxRetries' => (int)($this->extConfig['maxRetries']
-                ?? ConfigurationUtility::getDefaultConfiguration('maxRetries')),
-            'fallbacks' => $this->getFallbackModels($this->extConfig['geminiFallbackModels']) ?? []
+            'chunkSize' => (int)$config['chunkSize'],
+            'maxInputTokensAllowed' => (int)$config['maxInputTokensAllowed'],
+            'maxRetries' => (int)$config['maxRetries'],
+            'fallbacks' => $this->getFallbackModels($config['fallbackModels'] ?? '')
         ];
     }
 
     /**
-     * returns the response result from the api AI provider
+     * process the response from the AI provider
      *
      * @param string $prompt
      * @param array $options
      * @param int $retryCount
      * @param bool $stream
+     *
      * @return string|Generator
      */
-    public function process(string $prompt, array $options = [], int &$retryCount = 0, bool $stream = false): Generator|string
+    public function process(string $prompt, array $options = [], int &$retryCount = 0, bool $stream = false): string|Generator
     {
-        $options = $this->mergeConfigRecursive($options, $this->config);
+        parent::process($prompt, $options, $retryCount, $stream);
 
         $logOptions = $options;
-        unset($logOptions['api_key']);
-        $this->logger->info('Gemini' . !$stream ?: 'stream' . 'info: ', ['model' => $options['model'], 'options' => $logOptions]);
+        $this->logger->info(
+            ucfirst($options['model']) . ($stream ? ' stream ' : ' ') . 'info: ',
+            ['model' => $options['model'], 'options' => $logOptions]
+        );
 
         try {
-            return $this->client->getContent($prompt, $options, $stream);
+            if($stream) {
+                yield $this->client->getContent($prompt, $options, $stream);
+            } else {
+                return $this->client->getContent($prompt, $options, $stream);
+            }
         } catch (RequestException $e) {
             if ($e->hasResponse()) {
                 $statusCode = $e->getResponse()->getStatusCode();
@@ -82,7 +85,7 @@ class GeminiProvider extends AbstractProvider
                     $retryCount++;
                     $this->logger->warning('Gemini' . $statusCode . 'error', ['model' => $options['model'], 'options' => $logOptions]);
                     $options['model'] = $this->fallbackToModel('gemini', $options['model']);
-                    return $this->process($prompt, $options);
+                    $this->process($prompt, $options);
                 }
             }
             $this->handleServiceRequestException('Gemini', $e, $logOptions, $options['model']);
@@ -91,5 +94,15 @@ class GeminiProvider extends AbstractProvider
             $this->handleServiceGuzzleException('Gemini', $e, $logOptions, $options['model']);
             return '{error: "Gemini - ' .  LocalizationUtility::translate('not_available') . '"}';
         }
+    }
+
+    /**
+     * return the current configuration of the provider
+     *
+     * @return array
+     */
+    public function getConfig(): array
+    {
+        return $this->config;
     }
 }

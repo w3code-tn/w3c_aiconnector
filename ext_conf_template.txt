@@ -5,37 +5,37 @@ provider = gemini
 maxRetries = 5
 
 # cat=Gemini; type=string; label=Gemini API Key: Your Google Gemini API key.
-geminiApiKey =
+gemini.apiKey =
 
 # cat=Gemini; type=string; label=Gemini Model Name: The Gemini model to use.
-geminiModelName = gemini-2.0-flash
+gemini.modelName = gemini-2.0-flash
 
 # cat=Gemini; type=float; label=Gemini Temperature: The temperature for the Gemini model.
-geminiTemperature = 0.9
+gemini.temperature = 0.9
 
 # cat=Gemini; type=float; label=Gemini TopP: The topP for the Gemini model.
-geminiTopP = 0.95
+gemini.topP = 0.95
 
 # cat=Gemini; type=int; label=Gemini TopK: The topK for the Gemini model.
-geminiTopK = 40
+gemini.topK = 40
 
 # cat=Gemini; type=int; label=Gemini Candidate Count: The candidate count for the Gemini model.
-geminiCandidateCount = 1
+gemini.candidateCount = 1
 
 # cat=Gemini; type=int; label=Gemini Max Output Tokens: The max output tokens for the Gemini model.
-geminiMaxOutputTokens = 1024
+gemini.maxOutputTokens = 1024
 
 # cat=Gemini; type=string; label=Gemini Stop Sequences: The stop sequences for the Gemini model (comma separated).
-geminiStopSequences =
+gemini.stopSequences =
 
-# cat=Gemini; type=int; label=Gemini Chunk Size: The chunk size when using stream mode
-geminiChunkSize = 100
+# cat=Gemini; type=int; label=Gemini Chunk Size: The chunk size when using stream mode.
+gemini.chunkSize = 100
 
 # cat=Gemini; type=string; label=Gemini Fallback Models: Comma-separated list of Gemini models to use as fallback.
-geminiFallbackModels = gemini-2.5-pro, gemini-2.5-flash, gemini-2.0-flash
+gemini.fallbackModels = gemini-2.5-pro, gemini-2.5-flash, gemini-2.0-flash
 
 # cat=Gemini; type=int; label=Gemini Max Input Tokens Allowed: The max input tokens allowed for the Gemini model.
-geminiMaxInputTokensAllowed = 1000000
+gemini.maxInputTokensAllowed = 1000000
 
 # cat=OpenAi; type=string; label=OpenAI API Key: Your OpenAI API key.
 openAiApiKey =

@@ -7,14 +7,11 @@ namespace W3code\W3cAIConnector\Provider;
 use Generator;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
-use Psr\Log\LoggerAwareTrait;
 use W3code\W3cAIConnector\Client\GoogleTranslateClient;
-use W3code\W3cAIConnector\Utility\ConfigurationUtility;
 use W3code\W3cAIConnector\Utility\LocalizationUtility;
 
 class GoogleTranslateProvider extends AbstractProvider
 {
-    use LoggerAwareTrait;
 
     protected ?GoogleTranslateClient $client = null;
 
@@ -23,22 +20,16 @@ class GoogleTranslateProvider extends AbstractProvider
      *
      * @return void
      */
-    public function setConfig(): void
+    public function setup(): void
     {
         $this->config = [
-            'apiKey' => $this->extConfig['googleTranslateApiKey'] ?? '',
-            'targetLang' => $this->extConfig['googleTranslateTargetLang']
-                ?? ConfigurationUtility::getDefaultConfiguration('googleTranslateTargetLang'),
-            'sourceLang' => $this->extConfig['googleTranslateSourceLang']
-                ?? ConfigurationUtility::getDefaultConfiguration('googleTranslateSourceLang'),
-            'format' => $this->extConfig['googleTranslateFormat']
-                ?? ConfigurationUtility::getDefaultConfiguration('googleTranslateFormat'),
-            'model' => $this->extConfig['googleTranslateModel']
-                ?? ConfigurationUtility::getDefaultConfiguration('googleTranslateModel'),
-            'cid' => $this->extConfig['googleTranslateCid']
-                ?? ConfigurationUtility::getDefaultConfiguration('googleTranslateCid'),
-            'maxRetries' => (int)($this->extConfig['maxRetries']
-                ?? ConfigurationUtility::getDefaultConfiguration('maxRetries')),
+            'apiKey' => $this->extConfig['googleTranslateApiKey'],
+            'targetLang' => $this->extConfig['googleTranslateTargetLang'],
+            'sourceLang' => $this->extConfig['googleTranslateSourceLang'],
+            'format' => $this->extConfig['googleTranslateFormat'],
+            'model' => $this->extConfig['googleTranslateModel'],
+            'cid' => $this->extConfig['googleTranslateCid'],
+            'maxRetries' => (int)$this->extConfig['maxRetries'],
         ];
     }
 
@@ -53,10 +44,9 @@ class GoogleTranslateProvider extends AbstractProvider
      */
     public function process(string $prompt, array $options = [], int &$retryCount = 0, bool $stream = false): Generator|string
     {
-        $options = $this->mergeConfigRecursive($options, $this->config);
+        parent::process($prompt, $options, $retryCount, $stream);
 
         $logOptions = $options;
-        unset($logOptions['api_key']);
         $this->logger->info('Google Translate info:', ['targetLang' => $options['targetLang'], 'options' => $logOptions]);
 
         try {
@@ -101,5 +91,15 @@ class GoogleTranslateProvider extends AbstractProvider
             $this->handleServiceGuzzleException('Google Translate', $e, $logOptions, $options['model']);
             return '{error: "Google Translate - ' . LocalizationUtility::translate('not_available') . '"}';
         }
+    }
+
+    /**
+     * return the current configuration of the provider
+     *
+     * @return array
+     */
+    public function getConfig(): array
+    {
+        return $this->config;
     }
 }

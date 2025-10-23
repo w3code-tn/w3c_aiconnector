@@ -7,7 +7,6 @@ namespace W3code\W3cAIConnector\Provider;
 use Generator;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
-use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use W3code\W3cAIConnector\Client\OpenAIClient;
 use W3code\W3cAIConnector\Utility\ConfigurationUtility;
@@ -16,8 +15,6 @@ use W3code\W3cAIConnector\Utility\LocalizationUtility;
 class OpenAIProvider extends AbstractProvider
 {
 
-    use LoggerAwareTrait;
-
     protected ?OpenAIClient $client = null;
 
     /**
@@ -25,30 +22,20 @@ class OpenAIProvider extends AbstractProvider
      *
      * @return void
      */
-    public function setConfig(): void
+    public function setup(): void
     {
         $this->config = [
-            'apiKey' => $this->extConfig['openAiApiKey'] ?? '',
-            'model' => $this->extConfig['openAiModelName']
-                ?? ConfigurationUtility::getDefaultConfiguration('openaiModelName'),
-            'temperature' => (float)($this->extConfig['openAiTemperature']
-                ?? ConfigurationUtility::getDefaultConfiguration('openAiTemperature')),
-            'topP' => (float)($this->extConfig['openAiTopP']
-                ?? ConfigurationUtility::getDefaultConfiguration('openAiTopP')),
-            'max_output_tokens' => (int)($this->extConfig['openAiMaxOutputTokens']
-                ?? ConfigurationUtility::getDefaultConfiguration('openAiMaxOutputTokens')),
-            'stop' => $this->extConfig['openAiStop']
-                ? GeneralUtility::trimExplode(',', $this->extConfig['openAiStop'], true)
-                : ConfigurationUtility::getDefaultConfiguration('openAiStop'),
-            'stream' => (bool)($this->extConfig['openAiStream']
-                ?? ConfigurationUtility::getDefaultConfiguration('openAiStream')),
-            'chunkSize' => (int)($this->extConfig['openAiChunkSize']
-                ?? ConfigurationUtility::getDefaultConfiguration('openAiChunkSize')),
-            'maxInputTokensAllowed' => (int)($this->extConfig['openAiMaxInputTokensAllowed']
-                ?? ConfigurationUtility::getDefaultConfiguration('maxInputTokensAllowed')),
-            'maxRetries' => (int)($this->extConfig['maxRetries']
-                ?? ConfigurationUtility::getDefaultConfiguration('maxRetries')),
-            'fallbacks' => $this->getFallbackModels($this->extConfig['ollamaFallbackModels']) ?? []
+            'apiKey' => $this->extConfig['openAiApiKey'],
+            'model' => $this->extConfig['openAiModelName'],
+            'temperature' => (float)$this->extConfig['openAiTemperature'],
+            'topP' => (float)$this->extConfig['openAiTopP'],
+            'max_output_tokens' => (int)$this->extConfig['openAiMaxOutputTokens'],
+            'stop' => GeneralUtility::trimExplode(',', $this->extConfig['openAiStop'], true),
+            'stream' => (bool)$this->extConfig['openAiStream'],
+            'chunkSize' => (int)$this->extConfig['openAiChunkSize'],
+            'maxInputTokensAllowed' => (int)$this->extConfig['openAiMaxInputTokensAllowed'],
+            'maxRetries' => (int)$this->extConfig['maxRetries'],
+            'fallbacks' => $this->getFallbackModels($this->extConfig['ollamaFallbackModels'])
         ];
     }
 
@@ -63,10 +50,9 @@ class OpenAIProvider extends AbstractProvider
      */
     public function process(string $prompt, array $options = [], int &$retryCount = 0, bool $stream = false): Generator|string
     {
-        $options = $this->mergeConfigRecursive($options, $this->config);
+        parent::process($prompt, $options, $retryCount, $stream);
 
         $logOptions = $options;
-        unset($logOptions['api_key']);
         $this->logger->info('OpenAI info: ', ['model' => $options['model'], 'options' => $logOptions]);
 
         try {
@@ -88,5 +74,15 @@ class OpenAIProvider extends AbstractProvider
             $this->handleServiceGuzzleException('OpenAI', $e, $logOptions, $options['model']);
             return '{error: "OpenAI - ' .  LocalizationUtility::translate('not_available') . '"}';
         }
+    }
+
+    /**
+     * return the current configuration of the provider
+     *
+     * @return array
+     */
+    public function getConfig(): array
+    {
+        return $this->config;
     }
 }

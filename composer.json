@@ -17,6 +17,9 @@
             "W3code\\W3cAIConnector\\": "Classes/"
         }
     },
+    "replace": {
+        "w3code/w3c-aiconnector": "self.version"
+    },
     "config": {
         "allow-plugins": {
             "typo3/class-alias-loader": true,

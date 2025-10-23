@@ -3,24 +3,27 @@ declare(strict_types=1);
 
 namespace W3code\W3cAIConnector\Provider;
 
+use Generator;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationExtensionNotConfiguredException;
 use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationPathDoesNotExistException;
 use W3code\W3cAIConnector\DependencyInjection\ContainerAwareTrait;
 use W3code\W3cAIConnector\Utility\ConfigurationUtility;
+use W3code\W3cAIConnector\Utility\ProviderUtility;
 
 /**
  * Class AbstractProvider
  */
-abstract class AbstractProvider implements ProviderInterface
+abstract class AbstractProvider implements ProviderInterface, LoggerAwareInterface
 {
     use ContainerAwareTrait;
+    use LoggerAwareTrait;
 
     protected array $config = [];
     protected array $extConfig = [];
-
-    protected ProviderInterface $provider;
 
     /**
      * @throws ExtensionConfigurationExtensionNotConfiguredException
@@ -32,23 +35,30 @@ abstract class AbstractProvider implements ProviderInterface
     }
 
     /**
+     * returns the response result from the api AI provider
+     * base implementation to be overridden by child classes
+     *
+     * @param string $prompt
      * @param array $options
-     * @param array $params
-     * @return array
+     * @param int $retryCount
+     * @param bool $stream
+     *
+     * @return string|Generator
      */
-    protected function mergeConfigRecursive(array $options, array $params): array
+    public function process(string $prompt, array $options = [], int &$retryCount = 0, bool $stream = false): Generator|string
     {
-        foreach ($options as $key => $value) {
-            if (array_key_exists($key, $params)) {
-                $params[$key] = $value;
-            } elseif (isset($params['generationConfig']) && array_key_exists($key, $params['generationConfig'])) {
-                $params['generationConfig'][$key] = $value;
-            }
-        }
-        return $params;
+        $options = array_replace_recursive($options, $this->config);
+
+        $logOptions = $options;
+        $logOptions['apiKey'] = ProviderUtility::maskApiKey($logOptions['apiKey']);
+
+        // base implementation does nothing
+        return '';
     }
 
     /**
+     * fallback to another model if configured
+     *
      * @param string $provider
      * @param string $currentModel
      * @return string
@@ -59,12 +69,15 @@ abstract class AbstractProvider implements ProviderInterface
     }
 
     /**
-     * @param string $extConfig
+     * parse the fallback models configuration
+     *
+     * @param string $configuration
      * @return array
      */
-    protected function getFallbackModels(string $extConfig): array
+    protected function getFallbackModels(string $configuration): array
     {
-        $models = array_map('trim', explode(',', $extConfig));
+        $models = array_map('trim', explode(',', $configuration));
+
         $fallbacks = [];
         if (count($models) > 1) {
             for ($i = 0; $i < count($models); $i++) {
@@ -73,6 +86,8 @@ abstract class AbstractProvider implements ProviderInterface
         }
         return $fallbacks;
     }
+
+
 
     /**
      * @todo : create a custom Exception Class

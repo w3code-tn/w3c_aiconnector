@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace W3code\W3cAIConnector\Client;
 
+use Generator;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\ResponseInterface;
@@ -29,10 +30,10 @@ class GeminiClient
      * @param array $options
      * @param bool $stream
      *
-     * @return mixed
+     * @return string|Generator
      * @throws GuzzleException
      */
-    public function getContent(string $prompt, array $options = [], bool $stream = false): mixed
+    public function getContent(string $prompt, array $options = [], bool $stream = false): string|Generator
     {
         $response = $this->generateResponse($prompt, $options, $stream);
 
@@ -88,8 +89,11 @@ class GeminiClient
      */
     public function generateResponse(string $prompt, array $options = [], bool $stream = false): ResponseInterface
     {
-        $url = self::API_URL . $options['model'] . ($stream)
-            ? self::API_URL_STREAM_SUFFIX : self::API_URL_SUFFIX . $options['apiKey'];
+        $url = self::API_URL . $options['model'] . (
+            $stream
+                ? self::API_URL_STREAM_SUFFIX
+                : self::API_URL_SUFFIX
+        ) . $options['apiKey'];
 
         $payload = [
             'contents' => [

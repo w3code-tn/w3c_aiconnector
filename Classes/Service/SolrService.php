@@ -14,7 +14,7 @@ use W3code\W3cAIConnector\Utility\ConfigurationUtility;
 /**
  * Class SolrService
  */
-class SolrService
+class SolrService implements ServiceInterface
 {
     use LoggerAwareTrait;
 

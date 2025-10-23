@@ -7,14 +7,12 @@ namespace W3code\W3cAIConnector\Provider;
 use Generator;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
-use Psr\Log\LoggerAwareTrait;
 use W3code\W3cAIConnector\Client\DeepLClient;
-use W3code\W3cAIConnector\Utility\ConfigurationUtility;
 use W3code\W3cAIConnector\Utility\LocalizationUtility;
+use W3code\W3cAIConnector\Utility\ProviderUtility;
 
 class DeepLProvider extends AbstractProvider
 {
-    use LoggerAwareTrait;
 
     protected ?DeepLClient $client = null;
 
@@ -23,30 +21,21 @@ class DeepLProvider extends AbstractProvider
      *
      * @return void
      */
-    public function setConfig(): void
+    public function setup(): void
     {
         $this->config = [
-            'apiKey' => $this->extConfig['deeplApiKey'] ?? '',
-            'target_lang' => ConfigurationUtility::getDefaultConfiguration('deeplTargetLang'),
-            'source_lang' => $this->extConfig['deeplSourceLang']
-                ?? ConfigurationUtility::getDefaultConfiguration('deeplSourceLang'),
-            'split_sentences' => $this->extConfig['deeplSplitSentences']
-                ?? ConfigurationUtility::getDefaultConfiguration('deeplSplitSentences'),
-            'preserve_formatting' => (bool)($this->extConfig['deeplPreserveFormatting']
-                ?? ConfigurationUtility::getDefaultConfiguration('deeplPreserveFormatting')),
-            'formality' => $this->extConfig['deeplFormality']
-                ?? ConfigurationUtility::getDefaultConfiguration('deeplFormality'),
-            'glossary_id' => $this->extConfig['deeplGlossaryId']
-                ?? ConfigurationUtility::getDefaultConfiguration('deeplGlossaryId'),
-            'tag_handling' => $this->extConfig['deeplTagHandling']
-                ?? ConfigurationUtility::getDefaultConfiguration('deeplTagHandling'),
-            'outline_detection' => (bool)($this->extConfig['deeplOutlineDetection']
-                ?? ConfigurationUtility::getDefaultConfiguration('deeplOutlineDetection')),
-            'non_splitting_tags' => $this->extConfig['deeplNonSplittingTags']
-                ?? ConfigurationUtility::getDefaultConfiguration('deeplNonSplittingTags'),
-            'apiVersion' => $this->extConfig['deeplApiVersion'] ?? 'free',
-            'maxRetries' => (int)($this->extConfig['maxRetries']
-                ?? ConfigurationUtility::getDefaultConfiguration('maxRetries'))
+            'apiKey' => $this->extConfig['deeplApiKey'],
+            'target_lang' => $this->extConfig['deeplTargetLang'],
+            'source_lang' => $this->extConfig['deeplSourceLang'],
+            'split_sentences' => $this->extConfig['deeplSplitSentences'],
+            'preserve_formatting' => (bool)$this->extConfig['deeplPreserveFormatting'],
+            'formality' => $this->extConfig['deeplFormality'],
+            'glossary_id' => $this->extConfig['deeplGlossaryId'],
+            'tag_handling' => $this->extConfig['deeplTagHandling'],
+            'outline_detection' => (bool)$this->extConfig['deeplOutlineDetection'],
+            'non_splitting_tags' => $this->extConfig['deeplNonSplittingTags'],
+            'apiVersion' => $this->extConfig['deeplApiVersion'],
+            'maxRetries' => (int)$this->extConfig['maxRetries']
         ];
     }
 
@@ -59,12 +48,11 @@ class DeepLProvider extends AbstractProvider
      * @param bool $stream
      * @return string|Generator
      */
-    public function process(string $prompt, array $options = [], int &$retryCount = 0, bool $stream = false): Generator|string
+    public function process(string $prompt, array $options = [], int &$retryCount = 0, bool $stream = false): string|Generator
     {
-        $options = $this->mergeConfigRecursive($options, $this->config);
+        parent::process($prompt, $options, $retryCount, $stream);
 
         $logOptions = $options;
-        unset($logOptions['api_key']);
         $this->logger->info('DeepL info: ', ['target_lang' => $options['target_lang'], 'options' => $logOptions]);
 
         try {
@@ -109,5 +97,15 @@ class DeepLProvider extends AbstractProvider
             $this->handleServiceGuzzleException('DeepL', $e, $logOptions, $options['model']);
             return '{error: "DeepL - ' . LocalizationUtility::translate('not_available') . '"}';
         }
+    }
+
+    /**
+     * return the current configuration of the provider
+     *
+     * @return array
+     */
+    public function getConfig(): array
+    {
+        return $this->config;
     }
 }
