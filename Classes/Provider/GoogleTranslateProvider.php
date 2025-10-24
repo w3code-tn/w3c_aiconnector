@@ -99,7 +99,7 @@ class GoogleTranslateProvider extends AbstractProvider
     {
         return [
             'targetLang' => $options['targetLang'],
-            'options' => $logOptions
+            'options' => $logOptions,
         ];
     }
 }

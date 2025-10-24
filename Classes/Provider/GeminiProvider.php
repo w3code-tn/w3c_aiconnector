@@ -78,33 +78,34 @@ class GeminiProvider extends AbstractProvider
      */
     public function processStream(string $prompt, array $options = []): Generator
     {
-        yield from $this->handleProcess(function ($prompt, $options) {
-            $response = $this->client->generateResponse($prompt, $options, true);
+        yield from $this->handleProcess(
+            function ($prompt, $options) {
+                $response = $this->client->generateResponse($prompt, $options, true);
 
-            $body = $response->getBody();
-            $buffer = '';
+                $body = $response->getBody();
+                $buffer = '';
 
-            while (!$body->eof()) {
-                $buffer .= $body->read($options['chunkSize'] ?? 2048);
-                $tempBuffer = substr($buffer, strpos($buffer, '{'));
-                $potentialObjects = explode('}', $tempBuffer);
-                $lastElement = array_pop($potentialObjects);
-                $potentialJson = implode('}', $potentialObjects) . '}';
+                while (!$body->eof()) {
+                    $buffer .= $body->read($options['chunkSize'] ?? 2048);
+                    $tempBuffer = substr($buffer, strpos($buffer, '{'));
+                    $potentialObjects = explode('}', $tempBuffer);
+                    $lastElement = array_pop($potentialObjects);
+                    $potentialJson = implode('}', $potentialObjects) . '}';
 
-                if (json_validate($potentialJson)) {
-                    $buffer = $lastElement;
-                    $decoded = json_decode($potentialJson, true);
+                    if (json_validate($potentialJson)) {
+                        $buffer = $lastElement;
+                        $decoded = json_decode($potentialJson, true);
 
-                    if (isset($decoded['candidates'][0]['content']['parts'][0]['text'])) {
-                        yield $decoded['candidates'][0]['content']['parts'][0]['text'];
-                    }
+                        if (isset($decoded['candidates'][0]['content']['parts'][0]['text'])) {
+                            yield $decoded['candidates'][0]['content']['parts'][0]['text'];
+                        }
 
-                    if (isset($decoded['usageMetadata'])) {
-                        // @todo: optional break if needed
+                        if (isset($decoded['usageMetadata'])) {
+                            // @todo: optional break if needed
+                        }
                     }
                 }
-            }
-        },
+            },
             $prompt,
             self::PROVIDER_NAME,
             $options,

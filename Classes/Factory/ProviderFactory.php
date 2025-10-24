@@ -27,7 +27,7 @@ class ProviderFactory
      */
     public function create(?string $providerName = ''): ProviderInterface
     {
-        if(!empty($providerName)) {
+        if (!empty($providerName)) {
             $provider = $providerName;
         } else {
             $provider = $this->getProvider();

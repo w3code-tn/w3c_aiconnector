@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace W3code\W3cAIConnector\Utility;
@@ -16,7 +17,7 @@ class SettingsUtility
      *
      * @return array|null
      */
-    public static function getSettings(?string $extensionName = '', ?string $pluginName = ''): array|null
+    public static function getSettings(?string $extensionName = '', ?string $pluginName = ''): ?array
     {
         /** @var ConfigurationManagerInterface $configurationManager */
         $configurationManager = GeneralUtility::makeInstance(ConfigurationManagerInterface::class);

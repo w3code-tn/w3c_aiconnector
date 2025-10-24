@@ -69,7 +69,6 @@ abstract class AbstractProvider implements ProviderInterface, LoggerAwareInterfa
      * @param array $options
      * @param array $logOptions
      * @param bool $stream
-     *
      */
     private function handleProcessException(RequestException $e, string $prompt, string $providerName, array $options, array $logOptions, bool $stream)
     {
@@ -83,12 +82,12 @@ abstract class AbstractProvider implements ProviderInterface, LoggerAwareInterfa
                 ]);
                 $options['model'] = $this->fallbackToModel($options['model']);
                 $this->retryCount++;
-                if($stream) {
+                if ($stream) {
                     yield from $this->processStream($prompt, $options);
                     return;
-                } else {
-                    return $this->process($prompt, $options);
                 }
+                return $this->process($prompt, $options);
+
             }
         }
 
@@ -140,7 +139,7 @@ abstract class AbstractProvider implements ProviderInterface, LoggerAwareInterfa
     {
         return [
             'model' => $options['model'],
-            'options' => $logOptions
+            'options' => $logOptions,
         ];
     }
 }

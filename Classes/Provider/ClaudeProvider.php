@@ -78,37 +78,38 @@ class ClaudeProvider extends AbstractProvider
      */
     public function processStream(string $prompt, array $options = []): Generator
     {
-        yield from $this->handleProcess(function ($prompt, $options) {
-            $response = $this->client->generateResponse($prompt, $options, true);
+        yield from $this->handleProcess(
+            function ($prompt, $options) {
+                $response = $this->client->generateResponse($prompt, $options, true);
 
-            $body = $response->getBody();
-            $buffer = '';
-            while (!$body->eof()) {
-                $buffer .= $body->read(1024);
-                while (($pos = strpos($buffer, "\n\n")) !== false) {
-                    $eventData = substr($buffer, 0, $pos);
-                    $buffer = substr($buffer, $pos + 2);
+                $body = $response->getBody();
+                $buffer = '';
+                while (!$body->eof()) {
+                    $buffer .= $body->read(1024);
+                    while (($pos = strpos($buffer, "\n\n")) !== false) {
+                        $eventData = substr($buffer, 0, $pos);
+                        $buffer = substr($buffer, $pos + 2);
 
-                    $event = null;
-                    $data = null;
+                        $event = null;
+                        $data = null;
 
-                    foreach (explode("\n", $eventData) as $line) {
-                        if (str_starts_with($line, 'event: ')) {
-                            $event = trim(substr($line, 7));
-                        } elseif (str_starts_with($line, 'data: ')) {
-                            $data = trim(substr($line, 6));
+                        foreach (explode("\n", $eventData) as $line) {
+                            if (str_starts_with($line, 'event: ')) {
+                                $event = trim(substr($line, 7));
+                            } elseif (str_starts_with($line, 'data: ')) {
+                                $data = trim(substr($line, 6));
+                            }
                         }
-                    }
 
-                    if ($event === 'content_block_delta') {
-                        $json = json_decode($data, true);
-                        if (isset($json['delta']['text'])) {
-                            yield $json['delta']['text'];
+                        if ($event === 'content_block_delta') {
+                            $json = json_decode($data, true);
+                            if (isset($json['delta']['text'])) {
+                                yield $json['delta']['text'];
+                            }
                         }
                     }
                 }
-            }
-        },
+            },
             $prompt,
             self::PROVIDER_NAME,
             $options,

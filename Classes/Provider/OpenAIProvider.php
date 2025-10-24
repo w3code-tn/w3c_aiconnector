@@ -73,32 +73,33 @@ class OpenAIProvider extends AbstractProvider
      */
     public function processStream(string $prompt, array $options = []): Generator
     {
-        yield from $this->handleProcess(function ($prompt, $options) {
-            $response = $this->client->generateResponse($prompt, $options, true);
+        yield from $this->handleProcess(
+            function ($prompt, $options) {
+                $response = $this->client->generateResponse($prompt, $options, true);
 
-            $body = $response->getBody();
-            $buffer = '';
-            while (!$body->eof()) {
-                $buffer .= $body->read(1024);
-                while (($pos = strpos($buffer, "\n\n")) !== false) {
-                    $eventData = substr($buffer, 0, $pos);
-                    $buffer = substr($buffer, $pos + 2);
+                $body = $response->getBody();
+                $buffer = '';
+                while (!$body->eof()) {
+                    $buffer .= $body->read(1024);
+                    while (($pos = strpos($buffer, "\n\n")) !== false) {
+                        $eventData = substr($buffer, 0, $pos);
+                        $buffer = substr($buffer, $pos + 2);
 
-                    foreach (explode("\n", $eventData) as $line) {
-                        if (str_starts_with($line, 'data: ')) {
-                            $json = trim(substr($line, 5));
-                            if ($json === '[DONE]') {
-                                break 2; // Exit both loops
-                            }
-                            $data = json_decode($json, true);
-                            if (isset($data['choices'][0]['delta']['content'])) {
-                                yield $data['choices'][0]['delta']['content'];
+                        foreach (explode("\n", $eventData) as $line) {
+                            if (str_starts_with($line, 'data: ')) {
+                                $json = trim(substr($line, 5));
+                                if ($json === '[DONE]') {
+                                    break 2; // Exit both loops
+                                }
+                                $data = json_decode($json, true);
+                                if (isset($data['choices'][0]['delta']['content'])) {
+                                    yield $data['choices'][0]['delta']['content'];
+                                }
                             }
                         }
                     }
                 }
-            }
-        },
+            },
             $prompt,
             self::PROVIDER_NAME,
             $options,

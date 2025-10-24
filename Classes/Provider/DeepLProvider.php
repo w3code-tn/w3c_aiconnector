@@ -104,7 +104,7 @@ class DeepLProvider extends AbstractProvider
     {
         return [
             'target_lang' => $options['target_lang'],
-            'options' => $logOptions
+            'options' => $logOptions,
         ];
     }
 }
