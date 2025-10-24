@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace W3code\W3cAIConnector\Factory;
@@ -15,7 +16,6 @@ use W3code\W3cAIConnector\Utility\ConfigurationUtility;
  */
 class ProviderFactory
 {
-
     /**
      * initialize the AI model provider instance.
      *
@@ -25,13 +25,13 @@ class ProviderFactory
      *
      * @return ProviderInterface
      */
-    public function create(): ProviderInterface
+    public function create(?string $providerName = ''): ProviderInterface
     {
-        $provider = $this->getProvider();
-
-        // Get the provider from the extension configuration
-
-        // Override configuration from typoscript settings if needed
+        if(!empty($providerName)) {
+            $provider = $providerName;
+        } else {
+            $provider = $this->getProvider();
+        }
 
         return $this->getProviderInstance($provider);
     }
@@ -45,7 +45,7 @@ class ProviderFactory
      */
     public function getProvider(): string
     {
-        $extConfig = ConfigurationUtility::getExtensionConfiguration();
+        $extConfig = ConfigurationUtility::getExtensionConfiguration('w3c_aiconnector');
 
         return $extConfig['provider'];
     }

@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace W3code\W3cAIConnector\Provider;
 
 use Generator;
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\RequestException;
 use W3code\W3cAIConnector\Client\GeminiClient;
-use W3code\W3cAIConnector\Utility\LocalizationUtility;
 
 /**
  * Class GeminiProvider
@@ -28,12 +25,10 @@ class GeminiProvider extends AbstractProvider
 
     /**
      * sets the configuration for the AI provider
-     *
-     * @return void
      */
     public function setup(): void
     {
-        $config = $this->extConfig['gemini'];
+        $config = $this->extConfig[self::PROVIDER_NAME];
         $this->config = [
             'apiKey' => $config['apiKey'],
             'model' => $config['modelName'],
@@ -48,7 +43,7 @@ class GeminiProvider extends AbstractProvider
             'chunkSize' => (int)$config['chunkSize'],
             'maxInputTokensAllowed' => (int)$config['maxInputTokensAllowed'],
             'maxRetries' => (int)$config['maxRetries'],
-            'fallbacks' => $this->getFallbackModels($config['fallbackModels'] ?? '')
+            'fallbacks' => $this->getFallbackModels($config['fallbackModels'] ?? ''),
         ];
     }
 
@@ -57,52 +52,63 @@ class GeminiProvider extends AbstractProvider
      *
      * @param string $prompt
      * @param array $options
-     * @param int $retryCount
-     * @param bool $stream
      *
-     * @return string|Generator
+     * @return string
      */
-    public function process(string $prompt, array $options = [], int &$retryCount = 0, bool $stream = false): string|Generator
+    public function process(string $prompt, array $options = []): string
     {
-        parent::process($prompt, $options, $retryCount, $stream);
-
-        $logOptions = $options;
-        $this->logger->info(
-            ucfirst($options['model']) . ($stream ? ' stream ' : ' ') . 'info: ',
-            ['model' => $options['model'], 'options' => $logOptions]
+        return $this->handleProcess(
+            function ($prompt, $options) {
+                $response = $this->client->generateResponse($prompt, $options);
+                $body = json_decode((string)$response->getBody(), true);
+                return $body['candidates'][0]['content']['parts'][0]['text'] ?? '';
+            },
+            $prompt,
+            self::PROVIDER_NAME,
+            $options
         );
-
-        try {
-            if($stream) {
-                yield $this->client->getContent($prompt, $options, $stream);
-            } else {
-                return $this->client->getContent($prompt, $options, $stream);
-            }
-        } catch (RequestException $e) {
-            if ($e->hasResponse()) {
-                $statusCode = $e->getResponse()->getStatusCode();
-                if (($statusCode === 429 || $statusCode === 503) && $retryCount < $this->config['maxRetries']) {
-                    $retryCount++;
-                    $this->logger->warning('Gemini' . $statusCode . 'error', ['model' => $options['model'], 'options' => $logOptions]);
-                    $options['model'] = $this->fallbackToModel('gemini', $options['model']);
-                    $this->process($prompt, $options);
-                }
-            }
-            $this->handleServiceRequestException('Gemini', $e, $logOptions, $options['model']);
-            return '{error: "Gemini - ' . LocalizationUtility::translate('not_available') . '"}';
-        } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('Gemini', $e, $logOptions, $options['model']);
-            return '{error: "Gemini - ' .  LocalizationUtility::translate('not_available') . '"}';
-        }
     }
 
     /**
-     * return the current configuration of the provider
+     * process the response from the AI provider in streaming mode
      *
-     * @return array
+     * @param string $prompt
+     * @param array $options
+     * @return Generator
      */
-    public function getConfig(): array
+    public function processStream(string $prompt, array $options = []): Generator
     {
-        return $this->config;
+        yield from $this->handleProcess(function ($prompt, $options) {
+            $response = $this->client->generateResponse($prompt, $options, true);
+
+            $body = $response->getBody();
+            $buffer = '';
+
+            while (!$body->eof()) {
+                $buffer .= $body->read($options['chunkSize'] ?? 2048);
+                $tempBuffer = substr($buffer, strpos($buffer, '{'));
+                $potentialObjects = explode('}', $tempBuffer);
+                $lastElement = array_pop($potentialObjects);
+                $potentialJson = implode('}', $potentialObjects) . '}';
+
+                if (json_validate($potentialJson)) {
+                    $buffer = $lastElement;
+                    $decoded = json_decode($potentialJson, true);
+
+                    if (isset($decoded['candidates'][0]['content']['parts'][0]['text'])) {
+                        yield $decoded['candidates'][0]['content']['parts'][0]['text'];
+                    }
+
+                    if (isset($decoded['usageMetadata'])) {
+                        // @todo: optional break if needed
+                    }
+                }
+            }
+        },
+            $prompt,
+            self::PROVIDER_NAME,
+            $options,
+            true
+        );
     }
 }

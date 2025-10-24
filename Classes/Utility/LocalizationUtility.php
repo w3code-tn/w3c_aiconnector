@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace W3code\W3cAIConnector\Utility;
@@ -13,10 +14,10 @@ class LocalizationUtility
     /**
      * @param string $key
      * @param array|null $arguments
-     * @return null|string
+     * @return string|null
      */
-    public static function translate(string $key, array|null $arguments = null): string|null
+    public static function translate(string $key, string $extensionName, ?array $arguments = null): ?string
     {
-        return ExtbaseLocalizationUtility::translate($key, 'w3c_aiconnector', $arguments);
+        return ExtbaseLocalizationUtility::translate($key, $extensionName, $arguments);
     }
 }

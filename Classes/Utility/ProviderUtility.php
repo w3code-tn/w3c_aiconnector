@@ -1,16 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 namespace W3code\W3cAIConnector\Utility;
-
-use TYPO3\CMS\Core\Utility\StringUtility;
 
 /**
  * Class ProviderUtility
  */
 class ProviderUtility
 {
-
     /**
      * mask the api key for logging purposes
      *
@@ -52,7 +50,7 @@ class ProviderUtility
         $maxPromptLength = $config['max_input_tokens_allowed'];
         $resultStrings = [];
         foreach ($results as $result) {
-            $resultStrings[] = "- titre: " . ($result['title'] ?? '') . " - contenu: " . ($result['content'] ?? '') . " - URL: " . ($result['url'] ?? '') . "\n";
+            $resultStrings[] = '- titre: ' . ($result['title'] ?? '') . ' - contenu: ' . ($result['content'] ?? '') . ' - URL: ' . ($result['url'] ?? '') . "\n";
         }
 
         $prompt = $basePrompt . implode('', $resultStrings);

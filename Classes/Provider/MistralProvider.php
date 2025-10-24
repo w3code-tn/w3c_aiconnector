@@ -5,85 +5,107 @@ declare(strict_types=1);
 namespace W3code\W3cAIConnector\Provider;
 
 use Generator;
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\RequestException;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use W3code\W3cAIConnector\Client\MistralClient;
-use W3code\W3cAIConnector\Utility\ConfigurationUtility;
-use W3code\W3cAIConnector\Utility\LocalizationUtility;
 
 class MistralProvider extends AbstractProvider
 {
-
+    private const PROVIDER_NAME = 'mistral';
     protected ?MistralClient $client = null;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->client = new MistralClient();
+        $this->setup();
+    }
 
     /**
      * Set all configuration needed for the AI model provider
-     *
-     * @return void
      */
     public function setup(): void
     {
+        $config = $this->extConfig[self::PROVIDER_NAME];
         $this->config = [
-            'apiKey' => $this->extConfig['mistralApiKey'],
-            'model' => $this->extConfig['mistralModelName'],
-            'temperature' => (float)$this->extConfig['mistralTemperature'],
-            'topP' => (float)$this->extConfig['mistralTopP'],
-            'maxTokens' => (int)$this->extConfig['mistralMaxTokens'],
-            'stop' => GeneralUtility::trimExplode(',', $this->extConfig['mistralStop'], true),
-            'randomSeed' => (int)$this->extConfig['mistralRandomSeed'],
-            'stream' => (bool)$this->extConfig['mistralStream'],
-            'safePrompt' => (bool)$this->extConfig['mistralSafePrompt'],
-            'chunkSize' => (int)$this->extConfig['mistralChunkSize'],
-            'maxInputTokensAllowed' => (int)$this->extConfig['mistralMaxInputTokensAllowed'],
-            'maxRetries' => (int)$this->extConfig['maxRetries'],
-            'fallbacks' => $this->getFallbackModels($this->extConfig['mistralFallbackModels'])
+            'apiKey' => $config['apiKey'],
+            'model' => $config['modelName'],
+            'temperature' => (float)$config['temperature'],
+            'topP' => (float)$config['topP'],
+            'maxTokens' => (int)$config['maxTokens'],
+            'stop' => GeneralUtility::trimExplode(',', $config['stop'], true),
+            'randomSeed' => (int)$config['randomSeed'],
+            'stream' => (bool)$config['stream'],
+            'safePrompt' => (bool)$config['safePrompt'],
+            'chunkSize' => (int)$config['chunkSize'],
+            'maxInputTokensAllowed' => (int)$config['maxInputTokensAllowed'],
+            'maxRetries' => (int)$config['maxRetries'],
+            'fallbacks' => $this->getFallbackModels($config['fallbackModels']),
         ];
     }
 
     /**
-     * returns the response result from the api AI provider
+     * process the response from the AI provider
      *
      * @param string $prompt
      * @param array $options
-     * @param int $retryCount
-     * @param bool $stream
-     * @return string|Generator
+     *
+     * @return string
      */
-    public function process(string $prompt, array $options = [], int &$retryCount = 0, bool $stream = false): Generator|string
+    public function process(string $prompt, array $options = []): string
     {
-        parent::process($prompt, $options, $retryCount, $stream);
-
-        $logOptions = $options;
-        $this->logger->info('Mistral info: ', ['model' => $options['model'], 'options' => $logOptions]);
-
-        try {
-            return $this->client->getContent($prompt, $options, $stream);
-        } catch (RequestException $e) {
-            if ($e->hasResponse()) {
-                $statusCode = $e->getResponse()->getStatusCode();
-                if ($statusCode === 429 && $retryCount < $this->config['maxRetries']) {
-                    $retryCount++;
-                    $this->logger->warning('Mistral' . $statusCode . 'error', ['model' => $options['model'], 'options' => $logOptions]);
-                    $options['model'] = $this->fallbackToModel('mistral', $options['model']);
-                    return $this->process($prompt, $options);
-                }
-            }
-            $this->handleServiceRequestException('Mistral', $e, $logOptions, $options['model']);
-            return '{error: "Mistral - ' . LocalizationUtility::translate('not_available') . '"}';
-        } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('Mistral', $e, $logOptions, $options['model']);
-            return '{error: "Mistral - ' .  LocalizationUtility::translate('not_available') . '"}';
-        }
+        return $this->handleProcess(
+            function ($prompt, $options) {
+                $response = $this->client->generateResponse($prompt, $options);
+                $body = json_decode((string)$response->getBody(), true);
+                return $body['choices'][0]['message']['content'] ?? null;
+            },
+            $prompt,
+            self::PROVIDER_NAME,
+            $options
+        );
     }
 
     /**
-     * return the current configuration of the provider
+     * process the response from the AI provider in streaming mode
      *
-     * @return array
+     * @param string $prompt
+     * @param array $options
+     * @return Generator
      */
-    public function getConfig(): array
+    public function processStream(string $prompt, array $options = []): Generator
     {
-        return $this->config;
+        yield from $this->handleProcess(function ($prompt, $options) {
+            $response = $this->client->generateResponse($prompt, $options, true);
+
+            $body = $response->getBody();
+            $buffer = '';
+
+            while (!$body->eof()) {
+                $buffer .= $body->read($options['chunkSize']);
+                while (($pos = strpos($buffer, "\n\n")) !== false) {
+                    $eventData = substr($buffer, 0, $pos);
+                    $buffer = substr($buffer, $pos + 2);
+
+                    foreach (explode("\n", $eventData) as $line) {
+                        if (str_starts_with($line, 'data: ')) {
+                            $json = trim(substr($line, 5));
+                            if ($json === '[DONE]') {
+                                break 2; // Break out of both while loops
+                            }
+                            $data = json_decode($json, true);
+                            if (isset($data['choices'][0]['delta']['content'])) {
+                                yield $data['choices'][0]['delta']['content'];
+                            }
+                        }
+                    }
+                }
+            }
+        },
+            $prompt,
+            self::PROVIDER_NAME,
+            $options,
+            true
+        );
     }
 }

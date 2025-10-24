@@ -5,107 +5,106 @@ declare(strict_types=1);
 namespace W3code\W3cAIConnector\Provider;
 
 use Generator;
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\RequestException;
 use W3code\W3cAIConnector\Client\DeepLClient;
-use W3code\W3cAIConnector\Utility\LocalizationUtility;
-use W3code\W3cAIConnector\Utility\ProviderUtility;
 
 class DeepLProvider extends AbstractProvider
 {
-
+    private const PROVIDER_NAME = 'deepl';
     protected ?DeepLClient $client = null;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->client = new DeepLClient();
+        $this->setup();
+    }
 
     /**
      * Set all configuration needed for the AI model provider
-     *
-     * @return void
      */
     public function setup(): void
     {
+        $config = $this->extConfig[self::PROVIDER_NAME];
         $this->config = [
-            'apiKey' => $this->extConfig['deeplApiKey'],
-            'target_lang' => $this->extConfig['deeplTargetLang'],
-            'source_lang' => $this->extConfig['deeplSourceLang'],
-            'split_sentences' => $this->extConfig['deeplSplitSentences'],
-            'preserve_formatting' => (bool)$this->extConfig['deeplPreserveFormatting'],
-            'formality' => $this->extConfig['deeplFormality'],
-            'glossary_id' => $this->extConfig['deeplGlossaryId'],
-            'tag_handling' => $this->extConfig['deeplTagHandling'],
-            'outline_detection' => (bool)$this->extConfig['deeplOutlineDetection'],
-            'non_splitting_tags' => $this->extConfig['deeplNonSplittingTags'],
-            'apiVersion' => $this->extConfig['deeplApiVersion'],
-            'maxRetries' => (int)$this->extConfig['maxRetries']
+            'apiKey' => $config['apiKey'],
+            'target_lang' => $config['targetLang'],
+            'source_lang' => $config['sourceLang'],
+            'split_sentences' => $config['splitSentences'],
+            'preserve_formatting' => (bool)$config['preserveFormatting'],
+            'formality' => $config['formality'],
+            'glossary_id' => $config['glossaryId'],
+            'tag_handling' => $config['tagHandling'],
+            'outline_detection' => (bool)$config['outlineDetection'],
+            'non_splitting_tags' => $config['nonSplittingTags'],
+            'apiVersion' => $config['apiVersion'],
+            'maxRetries' => (int)$config['maxRetries'],
         ];
     }
 
     /**
-     * returns the response result from the api AI provider
+     * process the response from the AI provider
      *
      * @param string $prompt
      * @param array $options
-     * @param int $retryCount
-     * @param bool $stream
-     * @return string|Generator
+     *
+     * @return string
      */
-    public function process(string $prompt, array $options = [], int &$retryCount = 0, bool $stream = false): string|Generator
+    public function process(string $prompt, array $options = []): string
     {
-        parent::process($prompt, $options, $retryCount, $stream);
+        return $this->handleProcess(
+            function ($prompt, $options) {
+                $response = $this->client->generateResponse($prompt, $options);
+                $body = json_decode((string)$response->getBody(), true);
+                return $body['content'][0]['text'] ?? null;
+            },
+            $prompt,
+            self::PROVIDER_NAME,
+            $options,
+        );
+    }
 
-        $logOptions = $options;
-        $this->logger->info('DeepL info: ', ['target_lang' => $options['target_lang'], 'options' => $logOptions]);
+    /**
+     * process the response from the AI provider in streaming mode
+     *
+     * @param string $prompt
+     * @param array $options
+     * @return Generator
+     */
+    public function processStream(string $prompt, array $options = []): Generator
+    {
+        $result = $this->process($prompt, $options);
+        if ($result === null) {
+            yield '';
+            return;
+        }
 
-        try {
-            $result = $this->client->getContent($prompt, $options, $stream);
+        if (str_starts_with($result, '{error:')) {
+            yield $result;
+            return;
+        }
 
-            if($stream) {
-                return $result;
-            } else {
-                if ($result === null) {
-                    yield '';
-                    return null;
-                }
-
-                if (str_starts_with($result, '{error:')) {
-                    yield $result;
-                    return null;
-                }
-
-                // Découpe le texte en phrases ou en morceaux de 50 caractères
-                $chunkSize = 50;
-                $length = strlen($result);
-                for ($i = 0; $i < $length; $i += $chunkSize) {
-                    yield mb_substr($result, $i, $chunkSize);
-                    // Optionnel: flush pour forcer l’envoi
-                    if (ob_get_level() > 0) ob_flush();
-                    flush();
-                }
+        // Découpe le texte en phrases ou en morceaux de 50 caractères
+        $chunkSize = 50;
+        $length = strlen($result);
+        for ($i = 0; $i < $length; $i += $chunkSize) {
+            yield mb_substr($result, $i, $chunkSize);
+            // Optionnel : flush pour forcer l’envoi
+            if (ob_get_level() > 0) {
+                ob_flush();
             }
-        } catch (RequestException $e) {
-            if ($e->hasResponse()) {
-                $statusCode = $e->getResponse()->getStatusCode();
-                if (($statusCode === 429 || $statusCode === 456) && $retryCount < $this->config['maxRetries']) {
-                    $retryCount++;
-                    $this->logger->warning('DeepL' . $statusCode . 'error', ['options' => $logOptions]);
-                    sleep(5); // Wait 5 seconds before retrying
-                    return $this->process($prompt, $options);
-                }
-            }
-            $this->handleServiceRequestException('DeepL', $e, $logOptions, $options['model']);
-            return '{error: "DeepL - ' . LocalizationUtility::translate('not_available') . '"}';
-        } catch (GuzzleException $e) {
-            $this->handleServiceGuzzleException('DeepL', $e, $logOptions, $options['model']);
-            return '{error: "DeepL - ' . LocalizationUtility::translate('not_available') . '"}';
+            flush();
         }
     }
 
     /**
-     * return the current configuration of the provider
-     *
-     * @return array
+     * sets the log context
      */
-    public function getConfig(): array
+    protected function setLogContext(array $options, array $logOptions): ?array
     {
-        return $this->config;
+        return [
+            'target_lang' => $options['target_lang'],
+            'options' => $logOptions
+        ];
     }
 }

@@ -38,232 +38,232 @@ gemini.fallbackModels = gemini-2.5-pro, gemini-2.5-flash, gemini-2.0-flash
 gemini.maxInputTokensAllowed = 1000000
 
 # cat=OpenAi; type=string; label=OpenAI API Key: Your OpenAI API key.
-openAiApiKey =
+openai.apiKey =
 
 # cat=OpenAi; type=string; label=OpenAI Model Name: The OpenAI model to use.
-openAiModelName = gpt-4o
+openai.modelName = gpt-4o
 
 # cat=OpenAi; type=float; label=OpenAI Temperature: The temperature for the OpenAI model.
-openAiTemperature = 1.0
+openai.temperature = 1.0
 
 # cat=OpenAi; type=float; label=OpenAI TopP: The topP for the OpenAI model.
-openAiTopP = 1.0
+openai.topP = 1.0
 
 # cat=OpenAi; type=int; label=OpenAI Max Output Tokens: The maximum number of tokens to generate.
-openAiMaxOutputTokens = 1024
+openai.maxOutputTokens = 1024
 
 # cat=OpenAi; type=string; label=OpenAI Stop: The stop sequences for the OpenAI model (comma separated).
-openAiStop =
+openai.stop =
 
-# cat=OpenAi; type=int; label=OpenAi Chunk Size: The chunk size when using stream mode
-openAiChunkSize = 100
+# cat=OpenAi; type=int; label=OpenAI Chunk Size: The chunk size when using stream mode.
+openai.chunkSize = 100
 
 # cat=OpenAi; type=string; label=OpenAI Fallback Models: Comma-separated list of OpenAI models to use as fallback.
-openAiFallbackModels =
+openai.fallbackModels =
 
 # cat=OpenAi; type=int; label=OpenAI Max Input Tokens Allowed: The max input tokens allowed for the OpenAI model.
-openAiMaxInputTokensAllowed = 128000
+openai.maxInputTokensAllowed = 128000
 
 # cat=Claude; type=string; label=Claude API Key: Your Claude API key.
-claudeApiKey =
+claude.apiKey =
 
 # cat=Claude; type=string; label=Claude Model Name: The Claude model to use.
-claudeModelName = claude-opus-4-1-20250805
+claude.modelName = claude-opus-4-1-20250805
 
 # cat=Claude; type=string; label=Claude API Version: The Claude API version to use.
-claudeApiVersion = 2023-06-01
+claude.apiVersion = 2023-06-01
 
 # cat=Claude; type=int; label=Claude Max Tokens: The maximum number of tokens to generate.
-claudeMaxTokens = 1024
+claude.maxTokens = 1024
 
 # cat=Claude; type=string; label=Claude System Prompt: The system prompt for the Claude model.
-claudeSystem =
+claude.system =
 
 # cat=Claude; type=string; label=Claude Stop Sequences: The stop sequences for the Claude model (comma separated).
-claudeStopSequences =
+claude.stopSequences =
 
 # cat=Claude; type=float; label=Claude Temperature: The temperature for the Claude model.
-claudeTemperature = 1.0
+claude.temperature = 1.0
 
 # cat=Claude; type=float; label=Claude TopP: The topP for the Claude model.
-claudeTopP = 1.0
+claude.topP = 1.0
 
 # cat=Claude; type=int; label=Claude TopK: The topK for the Claude model.
-claudeTopK = 5
+claude.topK = 5
 
-# cat=Claude; type=int; label=Claude Chunk Size: The chunk size when using stream mode
-claudeChunkSize = 100
+# cat=Claude; type=int; label=Claude Chunk Size: The chunk size when using stream mode.
+claude.chunkSize = 100
 
 # cat=Claude; type=string; label=Claude Fallback Models: Comma-separated list of Claude models to use as fallback.
-claudeFallbackModels = claude-opus-4-1-20250805, claude-opus-4-20250514, claude-sonnet-4-20250514, claude-3-7-sonnet-20250219, claude-3-5-haiku-20241022, claude-3-5-haiku-20241022
+claude.fallbackModels = claude-opus-4-1-20250805, claude-opus-4-20250514, claude-sonnet-4-20250514, claude-3-7-sonnet-20250219, claude-3-5-haiku-20241022, claude-3-5-haiku-20241022
 
 # cat=Claude; type=int; label=Claude Max Input Tokens Allowed: The max input tokens allowed for the Claude model.
-claudeMaxInputTokensAllowed = 200000
+claude.maxInputTokensAllowed = 200000
 
 # cat=Mistral; type=string; label=Mistral API Key: Your Mistral API key.
-mistralApiKey =
+mistral.apiKey =
 
 # cat=Mistral; type=string; label=Mistral Model Name: The Mistral model to use.
-mistralModelName = mistral-large-latest
+mistral.modelName = mistral-large-latest
 
 # cat=Mistral; type=float; label=Mistral Temperature: The temperature for the Mistral model.
-mistralTemperature = 0.7
+mistral.temperature = 0.7
 
 # cat=Mistral; type=float; label=Mistral TopP: The topP for the Mistral model.
-mistralTopP = 1.0
+mistral.topP = 1.0
 
 # cat=Mistral; type=int; label=Mistral Max Tokens: The maximum number of tokens to generate.
-mistralMaxTokens = 1024
+mistral.maxTokens = 1024
 
 # cat=Mistral; type=string; label=Mistral Stop: The stop sequences for the Mistral model (comma separated).
-mistralStop =
+mistral.stop =
 
 # cat=Mistral; type=int; label=Mistral Random Seed: The random seed for the Mistral model.
-mistralRandomSeed = 0
+mistral.randomSeed = 0
 
 # cat=Mistral; type=boolean; label=Mistral Safe Prompt: Enable safe prompt for Mistral API.
-mistralSafePrompt = 0
+mistral.safePrompt = 0
 
-# cat=Mistral; type=int; label=Mistral Chunk Size: The chunk size when using stream mode
-mistralChunkSize = 100
+# cat=Mistral; type=int; label=Mistral Chunk Size: The chunk size when using stream mode.
+mistral.chunkSize = 100
 
 # cat=Mistral; type=string; label=Mistral Fallback Models: Comma-separated list of Mistral models to use as fallback.
-mistralFallbackModels =
+mistral.fallbackModels =
 
 # cat=Mistral; type=int; label=Mistral Max Input Tokens Allowed: The max input tokens allowed for the Mistral model.
-mistralMaxInputTokensAllowed = 32768
+mistral.maxInputTokensAllowed = 32768
 
 # cat=Cohere; type=string; label=Cohere API Key: Your Cohere API key.
-cohereApiKey =
+cohere.apiKey =
 
 # cat=Cohere; type=string; label=Cohere Model Name: The Cohere model to use.
-cohereModelName = command-a-03-2025
+cohere.modelName = command-a-03-2025
 
 # cat=Cohere; type=int; label=Cohere Max Tokens: The maximum number of tokens to generate.
-cohereMaxTokens = 1024
+cohere.maxTokens = 1024
 
 # cat=Cohere; type=float; label=Cohere Temperature: The temperature for the Cohere model.
-cohereTemperature = 0.3
+cohere.temperature = 0.3
 
 # cat=Cohere; type=float; label=Cohere P: The P for the Cohere model.
-cohereP = 0.75
+cohere.p = 0.75
 
 # cat=Cohere; type=int; label=Cohere K: The K for the Cohere model.
-cohereK = 0
+cohere.k = 0
 
 # cat=Cohere; type=float; label=Cohere Frequency Penalty: The frequency penalty for the Cohere model.
-cohereFrequencyPenalty = 0.0
+cohere.frequencyPenalty = 0.0
 
 # cat=Cohere; type=float; label=Cohere Presence Penalty: The presence penalty for the Cohere model.
-coherePresencePenalty = 0.0
+cohere.presencePenalty = 0.0
 
 # cat=Cohere; type=string; label=Cohere Stop Sequences: The stop sequences for the Cohere model (comma separated).
-cohereStopSequences =
+cohere.stopSequences =
 
 # cat=Cohere; type=string; label=Cohere Preamble: The preamble for the Cohere model.
-coherePreamble =
+cohere.preamble =
 
-# cat=Cohere; type=int; label=Cohere Chunk Size: The chunk size when using stream mode
-cohereChunkSize = 100
+# cat=Cohere; type=int; label=Cohere Chunk Size: The chunk size when using stream mode.
+cohere.chunkSize = 100
 
 # cat=Cohere; type=string; label=Cohere Fallback Models: Comma-separated list of Cohere models to use as fallback.
-cohereFallbackModels = command-a-03-2025, command-r7b-12-2024, command-a-reasoning-08-2025, command-a-vision-07-2025, command-r-08-2024, command-r-plus-08-2024
+cohere.fallbackModels = command-a-03-2025, command-r7b-12-2024, command-a-reasoning-08-2025, command-a-vision-07-2025, command-r-08-2024, command-r-plus-08-2024
 
 # cat=Cohere; type=int; label=Cohere Max Input Tokens Allowed: The max input tokens allowed for the Cohere model.
-cohereMaxInputTokensAllowed = 128000
+cohere.maxInputTokensAllowed = 128000
 
 # cat=DeepL; type=string; label=DeepL API Key: Your DeepL API key.
-deeplApiKey =
+deepl.apiKey =
 
 # cat=DeepL; type=string; label=DeepL Source Language: The source language for DeepL (optional).
-deeplSourceLang =
+deepl.sourceLang =
 
 # cat=DeepL; type=options[0,1,nonewlines]; label=DeepL Split Sentences: How sentences should be split.
-deeplSplitSentences = 1
+deepl.splitSentences = 1
 
 # cat=DeepL; type=boolean; label=DeepL Preserve Formatting: Preserve formatting in the translation.
-deeplPreserveFormatting = 0
+deepl.preserveFormatting = 0
 
 # cat=DeepL; type=options[less,more,default]; label=DeepL Formality: Desired formality for the translation.
-deeplFormality = default
+deepl.formality = default
 
 # cat=DeepL; type=string; label=DeepL Glossary ID: ID of a glossary to use.
-deeplGlossaryId =
+deepl.glossaryId =
 
 # cat=DeepL; type=options[xml,html]; label=DeepL Tag Handling: Type of tags to handle.
-deeplTagHandling =
+deepl.tagHandling =
 
 # cat=DeepL; type=boolean; label=DeepL Outline Detection: Detect XML structure.
-deeplOutlineDetection = 0
+deepl.outlineDetection = 0
 
 # cat=DeepL; type=string; label=DeepL Non Splitting Tags: Comma-separated list of tags that should not be split.
-deeplNonSplittingTags =
+deepl.nonSplittingTags =
 
 # cat=DeepL; type=options[pro,free]; label=DeepL API Version: Select the DeepL API version to use (pro or free).
-deeplApiVersion = free
+deepl.apiVersion = free
 
 # cat=Ollama; type=string; label=Ollama Model Name: The Ollama model to use (e.g., llama3).
-ollamaModelName = llama3
+ollama.modelName = llama3
 
 # cat=Ollama; type=string; label=Ollama endPoint Url: The endPoint Url to use.
-ollamaEndPoint = http://ollama:11434
+ollama.endPoint = http://ollama:11434
 
 # cat=Ollama; type=float; label=Ollama Temperature: The temperature for the Ollama model.
-ollamaTemperature = 0.8
+ollama.temperature = 0.8
 
 # cat=Ollama; type=float; label=Ollama TopP: The topP for the Ollama model.
-ollamaTopP = 0.9
+ollama.topP = 0.9
 
 # cat=Ollama; type=int; label=Ollama Num Predict: The number of tokens to predict for the Ollama model.
-ollamaNumPredict = 1024
+ollama.numPredict = 1024
 
 # cat=Ollama; type=string; label=Ollama Stop: The stop sequences for the Ollama model (comma separated).
-ollamaStop =
+ollama.stop =
 
 # cat=Ollama; type=string; label=Ollama Format: The format for the Ollama model (e.g., json).
-ollamaFormat =
+ollama.format =
 
 # cat=Ollama; type=string; label=Ollama System: The system prompt for the Ollama model.
-ollamaSystem =
+ollama.system =
 
-# cat=Ollama; type=int; label=Ollama Chunk Size: The chunk size when using stream mode
-ollamaChunkSize = 100
+# cat=Ollama; type=int; label=Ollama Chunk Size: The chunk size when using stream mode.
+ollama.chunkSize = 100
 
 # cat=Ollama; type=string; label=Ollama Fallback Models: Comma-separated list of Ollama models to use as fallback.
-ollamaFallbackModels =
+ollama.fallbackModels =
 
 # cat=Ollama; type=int; label=Ollama Max Input Tokens Allowed: The max input tokens allowed for the Ollama model.
-ollamaMaxInputTokensAllowed = 8192
+ollama.maxInputTokensAllowed = 8192
 
 # cat=GoogleTranslate; type=string; label=Google Translate API Key: Your Google Translate API key.
-googleTranslateApiKey =
+googleTranslate.apiKey =
 
 # cat=GoogleTranslate; type=string; label=Google Translate Target Language: The target language for Google Translate.
-googleTranslateTargetLang = en
+googleTranslate.targetLang = en
 
 # cat=GoogleTranslate; type=string; label=Google Translate Source Language: The source language for Google Translate (optional).
-googleTranslateSourceLang =
+googleTranslate.sourceLang =
 
 # cat=GoogleTranslate; type=options[html,text]; label=Google Translate Format: The format of the text to be translated.
-googleTranslateFormat = html
+googleTranslate.format = html
 
 # cat=GoogleTranslate; type=string; label=Google Translate Model: The model to use for translation (optional).
-googleTranslateModel =
+googleTranslate.model =
 
 # cat=GoogleTranslate; type=string; label=Google Translate Custom Model ID: The custom model ID to use for translation (optional).
-googleTranslateCid =
+googleTranslate.cid =
 
 # cat=Solr; type=boolean; label=Enable Highlighting: If checked, Solr will return highlighted snippets instead of the full content.
-hl_enabled = 1
+solr.hl_enabled = 1
 
 # cat=Solr; type=string; label=Highlighting Fields: Comma-separated list of fields to generate snippets from.
-hl_fl = contenu
+solr.hl_fl = contenu
 
 # cat=Solr; type=int; label=Number of Snippets: The maximum number of highlighted snippets to generate per field.
-hl_snippets = 3
+solr.hl_snippets = 3
 
 # cat=Solr; type=int; label=Fragment Size: The approximate size, in characters, of the snippets.
-hl_fragsize = 1000
+solr.hl_fragsize = 1000
 
 # cat=Solr; type=boolean; label=Merge Contiguous Fragments: If enabled, adjacent snippets are merged into one.
-hl_mergeContiguous = 1
+solr.hl_mergeContiguous = 1

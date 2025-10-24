@@ -10,26 +10,26 @@ interface ProviderInterface
 {
     /**
      * setup the AI provider
-     * useful for setting configuration parameters or any other setu
      */
     public function setup(): void;
-
-    /**
-     * return the current configuration of the provider
-     *
-     * @return array
-     */
-    public function getConfig(): array;
 
     /**
      * process the response from the AI provider
      *
      * @param string $prompt
      * @param array $options
-     * @param int $retryCount
-     * @param bool $stream
      *
-     * @return string|Generator
+     * @return string
      */
-    public function process(string $prompt, array $options = [], int &$retryCount = 0, bool $stream = false): string|Generator;
+    public function process(string $prompt, array $options = []): string;
+
+    /**
+     * process the streamed response from the AI provider
+     *
+     * @param string $prompt
+     * @param array $options
+     *
+     * @return Generator
+     */
+    public function processStream(string $prompt, array $options = []): Generator;
 }

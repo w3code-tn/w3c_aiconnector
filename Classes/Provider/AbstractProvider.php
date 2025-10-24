@@ -1,17 +1,16 @@
 <?php
+
 declare(strict_types=1);
 
 namespace W3code\W3cAIConnector\Provider;
 
-use Generator;
-use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationExtensionNotConfiguredException;
 use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationPathDoesNotExistException;
-use W3code\W3cAIConnector\DependencyInjection\ContainerAwareTrait;
 use W3code\W3cAIConnector\Utility\ConfigurationUtility;
+use W3code\W3cAIConnector\Utility\LogUtility;
 use W3code\W3cAIConnector\Utility\ProviderUtility;
 
 /**
@@ -19,11 +18,11 @@ use W3code\W3cAIConnector\Utility\ProviderUtility;
  */
 abstract class AbstractProvider implements ProviderInterface, LoggerAwareInterface
 {
-    use ContainerAwareTrait;
     use LoggerAwareTrait;
 
-    protected array $config = [];
+    public array $config = [];
     protected array $extConfig = [];
+    protected int $retryCount = 0;
 
     /**
      * @throws ExtensionConfigurationExtensionNotConfiguredException
@@ -31,41 +30,88 @@ abstract class AbstractProvider implements ProviderInterface, LoggerAwareInterfa
      */
     public function __construct()
     {
-        $this->extConfig = ConfigurationUtility::getExtensionConfiguration();
+        $this->extConfig = ConfigurationUtility::getExtensionConfiguration('w3c_aiconnector');
     }
 
     /**
-     * returns the response result from the api AI provider
-     * base implementation to be overridden by child classes
+     * handles the processing of the AI request
      *
+     * @param callable $requestCallback
      * @param string $prompt
+     * @param string $providerName
      * @param array $options
-     * @param int $retryCount
      * @param bool $stream
-     *
-     * @return string|Generator
      */
-    public function process(string $prompt, array $options = [], int &$retryCount = 0, bool $stream = false): Generator|string
+    protected function handleProcess(callable $requestCallback, string $prompt, string $providerName, array $options = [], bool $stream = false)
     {
         $options = array_replace_recursive($options, $this->config);
 
         $logOptions = $options;
         $logOptions['apiKey'] = ProviderUtility::maskApiKey($logOptions['apiKey']);
 
-        // base implementation does nothing
-        return '';
+        $this->logger->info(
+            ucfirst($providerName) . ($stream ? ' stream info: ' : ' info: '),
+            $this->setLogContext($options, $logOptions) ?? []
+        );
+
+        try {
+            return $requestCallback($prompt, $options);
+        } catch (RequestException $e) {
+            return $this->handleProcessException($e, $prompt, $providerName, $options, $logOptions, $stream);
+        }
+    }
+
+    /**
+     * handles exceptions during AI request processing
+     *
+     * @param RequestException $e
+     * @param string $prompt
+     * @param array $options
+     * @param array $logOptions
+     * @param bool $stream
+     *
+     */
+    private function handleProcessException(RequestException $e, string $prompt, string $providerName, array $options, array $logOptions, bool $stream)
+    {
+        if ($e->hasResponse()) {
+            $statusCode = $e->getResponse()->getStatusCode();
+
+            if ($statusCode && $this->retryCount < $this->config['maxRetries']) {
+                $this->logger->warning(ucfirst($providerName) . $statusCode . ' error', [
+                    'model' => $options['model'],
+                    'options' => $logOptions,
+                ]);
+                $options['model'] = $this->fallbackToModel($options['model']);
+                $this->retryCount++;
+                if($stream) {
+                    yield from $this->processStream($prompt, $options);
+                    return;
+                } else {
+                    return $this->process($prompt, $options);
+                }
+            }
+        }
+
+        if ($e->hasResponse()) {
+            $responseBody = $e->getResponse()->getBody()->getContents();
+            // Attempt to decode as JSON
+            $jsonError = json_decode($responseBody, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $responseBody = $jsonError; // Use decoded JSON
+            }
+        }
+
+        LogUtility::logException($options, $responseBody);
     }
 
     /**
      * fallback to another model if configured
      *
-     * @param string $provider
-     * @param string $currentModel
-     * @return string
+     * @return array
      */
-    protected function fallbackToModel(string $provider, string $currentModel): string
+    protected function fallbackToModel(string $model): string
     {
-        return $this->config['fallbacks'][$provider][$currentModel];
+        return $this->config['fallbacks'][$model];
     }
 
     /**
@@ -87,64 +133,14 @@ abstract class AbstractProvider implements ProviderInterface, LoggerAwareInterfa
         return $fallbacks;
     }
 
-
-
     /**
-     * @todo : create a custom Exception Class
-     *
-     * @param string $provider
-     * @param RequestException $e
-     * @param array $logOptions
-     * @param string|null $model
-     * @return void
+     * sets the log context
      */
-    protected function handleServiceRequestException(
-        string $provider,
-        RequestException $e,
-        array $logOptions,
-        ?string $model
-    ): void {
-        if ($e->hasResponse()) {
-            $responseBody = $e->getResponse()->getBody()->getContents();
-            // Attempt to decode as JSON
-            $jsonError = json_decode($responseBody, true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                $responseBody = $jsonError; // Use decoded JSON
-            }
-        }
-
-        $this->logger->error(
-            $provider . ' error: ',
-            [
-                'model' => $model,
-                'options' => $logOptions,
-                'response' => $responseBody ?? 'No response body available.'
-            ]
-        );
-    }
-
-    /**
-     * @todo : create a custom Exception Class
-     *
-     * @param string $provider
-     * @param GuzzleException $e
-     * @param array $logOptions
-     * @param string|null $model
-     * @return void
-     */
-    protected function handleServiceGuzzleException(
-        string $provider,
-        GuzzleException $e,
-        array $logOptions,
-        ?string $model,
-    ): void {
-        $this->logger->error(
-            $provider . ' error: ',
-            [
-                'model' => $model,
-                'options' => $logOptions,
-                'response' => 'No response body available.'
-            ]
-        );
+    protected function setLogContext(array $options, array $logOptions): ?array
+    {
+        return [
+            'model' => $options['model'],
+            'options' => $logOptions
+        ];
     }
 }

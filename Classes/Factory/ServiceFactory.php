@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace W3code\W3cAIConnector\Factory;
@@ -10,13 +11,11 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use W3code\W3cAIConnector\Service\ServiceInterface;
 use W3code\W3cAIConnector\Utility\ConfigurationUtility;
 
-
 /**
  * Class ServiceFactory
  */
 class ServiceFactory
 {
-
     /**
      * return the AI model provider name, e.x: gemini
      * NOTE: override this function in any other extension to add your custom provider
@@ -27,7 +26,10 @@ class ServiceFactory
      */
     public function getService(): string
     {
-        $extConfig = ConfigurationUtility::getExtensionConfiguration();
+        $extConfig = ConfigurationUtility::getExtensionConfiguration('w3c_aiconnector');
+
+        // @todo: Get the provider from the extension configuration e:x ai_search
+        // Override configuration from typoscript settings if needed
 
         return $extConfig['indexEngine'];
     }

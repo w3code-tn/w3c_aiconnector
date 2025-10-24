@@ -1,6 +1,8 @@
-.idea
+/.Build/
+/.idea/
 /composer.lock
-/vendor
-/web
-/var
-/.phpunit.result.cache
+/public/
+/vendor/
+/Build/phpunit/.phpunit.result.cache
+# Cache Files
+.php-cs-fixer.cache

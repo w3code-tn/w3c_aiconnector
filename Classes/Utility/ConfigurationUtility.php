@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace W3code\W3cAIConnector\Utility;
@@ -20,8 +21,8 @@ class ConfigurationUtility
      * @throws ExtensionConfigurationExtensionNotConfiguredException
      * @throws ExtensionConfigurationPathDoesNotExistException
      */
-    public static function getExtensionConfiguration(): array
+    public static function getExtensionConfiguration(string $extensionKey): array
     {
-        return (array)GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('w3c_aiconnector');
+        return (array)GeneralUtility::makeInstance(ExtensionConfiguration::class)->get($extensionKey);
     }
 }
