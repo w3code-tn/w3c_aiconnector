@@ -43,8 +43,7 @@ class OpenAIClient implements LoggerAwareInterface
             'input' => $prompt,
             'temperature' => $options['temperature'],
             'top_p' => $options['topP'],
-            'max_output_tokens' => $options['max_output_tokens'],
-            'stream' => $stream,
+            'max_output_tokens' => $options['max_output_tokens']
         ];
 
         if (!empty($options['stop'])) {

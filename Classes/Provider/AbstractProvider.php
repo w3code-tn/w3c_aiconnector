@@ -44,7 +44,7 @@ abstract class AbstractProvider implements ProviderInterface, LoggerAwareInterfa
      */
     protected function handleProcess(callable $requestCallback, string $prompt, string $providerName, array $options = [], bool $stream = false)
     {
-        $options = array_replace_recursive($options, $this->config);
+        $options = array_replace_recursive($this->config, $options);
 
         $logOptions = $options;
         $logOptions['apiKey'] = ProviderUtility::maskApiKey($logOptions['apiKey']);
@@ -76,31 +76,26 @@ abstract class AbstractProvider implements ProviderInterface, LoggerAwareInterfa
             $statusCode = $e->getResponse()->getStatusCode();
 
             if ($statusCode && $this->retryCount < $this->config['maxRetries']) {
+
                 $this->logger->warning(ucfirst($providerName) . $statusCode . ' error', [
                     'model' => $options['model'],
                     'options' => $logOptions,
                 ]);
+
                 $options['model'] = $this->fallbackToModel($options['model']);
+
                 $this->retryCount++;
+
                 if ($stream) {
                     yield from $this->processStream($prompt, $options);
                     return;
                 }
+
                 return $this->process($prompt, $options);
-
             }
         }
 
-        if ($e->hasResponse()) {
-            $responseBody = $e->getResponse()->getBody()->getContents();
-            // Attempt to decode as JSON
-            $jsonError = json_decode($responseBody, true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                $responseBody = $jsonError; // Use decoded JSON
-            }
-        }
-
-        LogUtility::logException($options, $responseBody);
+        LogUtility::logException($options, $e->getResponse()->getBody()->getContents());
     }
 
     /**

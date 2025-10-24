@@ -1,4 +1,4 @@
-# cat=general; type=options[gemini,openai,ollama,claude,mistral,cohere,deepl,googletranslate,custom]; label=AI Provider: Select the AI provider to use.
+# cat=general; type=options[gemini,openai,ollama,claude,mistral,cohere,deepl,googleTranslate,custom]; label=AI Provider: Select the AI provider to use.
 provider = gemini
 
 # cat=general; type=int; label=AI max retry attempts.

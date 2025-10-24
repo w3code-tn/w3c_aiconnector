@@ -56,7 +56,7 @@ class DeepLProvider extends AbstractProvider
             function ($prompt, $options) {
                 $response = $this->client->generateResponse($prompt, $options);
                 $body = json_decode((string)$response->getBody(), true);
-                return $body['content'][0]['text'] ?? null;
+                return $body['translations'][0]['text'] ?? null;
             },
             $prompt,
             self::PROVIDER_NAME,

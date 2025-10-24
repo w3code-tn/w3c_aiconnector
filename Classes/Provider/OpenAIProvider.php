@@ -33,7 +33,7 @@ class OpenAIProvider extends AbstractProvider
             'temperature' => (float)$config['temperature'],
             'topP' => (float)$config['topP'],
             'max_output_tokens' => (int)$config['maxOutputTokens'],
-            'stop' => GeneralUtility::trimExplode(',', $config['stop'], true),
+            'stop' => empty($config['stop']) ? [] : GeneralUtility::trimExplode(',', $config['stop'], true),
             'stream' => (bool)$config['stream'],
             'chunkSize' => (int)$config['chunkSize'],
             'maxInputTokensAllowed' => (int)$config['maxInputTokensAllowed'],
@@ -56,7 +56,7 @@ class OpenAIProvider extends AbstractProvider
             function ($prompt, $options) {
                 $response = $this->client->generateResponse($prompt, $options);
                 $body = json_decode((string)$response->getBody(), true);
-                return $body['candidates'][0]['content']['parts'][0]['text'] ?? '';
+                return $body['output'][0]['content'][0]['text'] ?? null;
             },
             $prompt,
             self::PROVIDER_NAME,

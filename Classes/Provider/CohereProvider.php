@@ -35,7 +35,7 @@ class CohereProvider extends AbstractProvider
             'k' => (int)$config['k'],
             'frequencyPenalty' => (float)$config['frequencyPenalty'],
             'presencePenalty' => (float)$config['presencePenalty'],
-            'stopSequences' => explode(',', $config['stopSequences']),
+            'stopSequences' => empty($config['stopSequences']) ? [] : explode(',', $config['stopSequences']),
             'stream' => (bool)$config['stream'],
             'preamble' => $config['preamble'],
             'chatHistory' => [], // Cohere expects an array of messages for chat_history

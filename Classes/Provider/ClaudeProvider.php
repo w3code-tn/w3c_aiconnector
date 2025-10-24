@@ -35,7 +35,7 @@ class ClaudeProvider extends AbstractProvider
             'apiVersion' => $config['apiVersion'],
             'maxTokens' => (int)$config['maxTokens'],
             'system' => $config['system'],
-            'stopSequences' => explode(',', $config['stopSequences']),
+            'stopSequences' => empty($config['stopSequences']) ? [] : explode(',', $config['stopSequences']),
             'stream' => (bool)$config['stream'],
             'temperature' => (float)$config['temperature'],
             'topP' => (float)$config['topP'],
