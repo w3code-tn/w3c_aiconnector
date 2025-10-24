@@ -32,10 +32,9 @@ class CohereClient implements LoggerAwareInterface
      * @param array $options
      * @param bool $stream
      *
-     * @return string|ResponseInterface
      * @throws GuzzleException
      */
-    public function generateResponse(string $prompt, array $options = [], bool $stream = false): string|ResponseInterface
+    public function generateResponse(string $prompt, array $options = [], bool $stream = false): ResponseInterface
     {
         $url = self::API_ENDPOINT;
 
@@ -68,11 +67,13 @@ class CohereClient implements LoggerAwareInterface
         if (!empty($options['stopSequences'])) {
             $jsonBody['stop_sequences'] = $options['stopSequences'];
         }
-        if (isset($options['stream'])) {
-            $jsonBody['stream'] = $options['stream'];
-        }
         if (!empty($options['preamble'])) {
             $jsonBody['preamble'] = $options['preamble'];
+        }
+
+        // Force streaming for this method
+        if ($stream) {
+            $jsonBody['stream'] = true;
         }
 
         try {

@@ -47,7 +47,9 @@ abstract class AbstractProvider implements ProviderInterface, LoggerAwareInterfa
         $options = array_replace_recursive($this->config, $options);
 
         $logOptions = $options;
-        $logOptions['apiKey'] = ProviderUtility::maskApiKey($logOptions['apiKey']);
+        if ($logOptions['apiKey']) {
+            $logOptions['apiKey'] = ProviderUtility::maskApiKey($logOptions['apiKey']);
+        }
 
         $this->logger->info(
             ucfirst($providerName) . ($stream ? ' stream info: ' : ' info: '),

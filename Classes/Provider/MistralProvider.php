@@ -33,7 +33,7 @@ class MistralProvider extends AbstractProvider
             'temperature' => (float)$config['temperature'],
             'topP' => (float)$config['topP'],
             'maxTokens' => (int)$config['maxTokens'],
-            'stop' => GeneralUtility::trimExplode(',', $config['stop'], true),
+            'stop' => empty($config['stop']) ? [] : GeneralUtility::trimExplode(',', $config['stop'], true),
             'randomSeed' => (int)$config['randomSeed'],
             'stream' => (bool)$config['stream'],
             'safePrompt' => (bool)$config['safePrompt'],

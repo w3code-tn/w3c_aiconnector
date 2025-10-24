@@ -21,8 +21,9 @@ class LogUtility
     {
         $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
 
-        if ($options) {
-            $logOptions = $options;
+        $logOptions = $options;
+
+        if ($logOptions['apiKey']) {
             $logOptions['apiKey'] = ProviderUtility::maskApiKey($logOptions['apiKey']);
         }
 

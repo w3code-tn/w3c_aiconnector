@@ -33,10 +33,9 @@ class DeepLClient implements LoggerAwareInterface
      * @param array $options
      * @param bool $stream
      *
-     * @return string|ResponseInterface
      * @throws GuzzleException
      */
-    public function generateResponse(string $prompt, array $options = []): string|ResponseInterface
+    public function generateResponse(string $prompt, array $options = []): ResponseInterface
     {
         $url = self::API_ENDPOINT;
         if (($options['apiVersion'] ?? 'free') === 'free') {

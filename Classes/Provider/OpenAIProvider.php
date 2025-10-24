@@ -52,6 +52,17 @@ class OpenAIProvider extends AbstractProvider
      */
     public function process(string $prompt, array $options = []): string
     {
+        debug($this->handleProcess(
+            function ($prompt, $options) {
+                $response = $this->client->generateResponse($prompt, $options);
+                $body = json_decode((string)$response->getBody(), true);
+                return $body['output'][0]['content'][0]['text'] ?? null;
+            },
+            $prompt,
+            self::PROVIDER_NAME,
+            $options
+        ));
+        die;
         return $this->handleProcess(
             function ($prompt, $options) {
                 $response = $this->client->generateResponse($prompt, $options);

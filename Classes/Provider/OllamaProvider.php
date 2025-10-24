@@ -7,7 +7,6 @@ namespace W3code\W3cAIConnector\Provider;
 use Generator;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use W3code\W3cAIConnector\Client\OllamaClient;
-use W3code\W3cAIConnector\Utility\ProviderUtility;
 
 class OllamaProvider extends AbstractProvider
 {
@@ -35,7 +34,7 @@ class OllamaProvider extends AbstractProvider
             'temperature' => (float)$config['temperature'],
             'topP' => (float)$config['topP'],
             'numPredict' => (int)$config['numPredict'],
-            'stop' => GeneralUtility::trimExplode(',', $config['stop'], true),
+            'stop' => empty($config['stop']) ? [] : GeneralUtility::trimExplode(',', $config['stop'], true),
             'format' => $config['format'],
             'system' => $config['system'],
             'chunkSize' => (int)$config['chunkSize'],
@@ -102,7 +101,6 @@ class OllamaProvider extends AbstractProvider
                     $data = json_decode($buffer, true);
 
                     $logOptions = $options;
-                    $logOptions['apiKey'] = ProviderUtility::maskApiKey($logOptions['apiKey']);
                     $this->logger->info('Ollama stream final buffer: ' . $buffer, ['model' => $options['model'], 'options' => $logOptions]);
                     if (json_last_error() === JSON_ERROR_NONE && isset($data['response'])) {
                         yield $data['response'];

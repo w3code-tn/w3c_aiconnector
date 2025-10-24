@@ -32,10 +32,9 @@ class ClaudeClient implements LoggerAwareInterface
      * @param array $options
      * @param bool $stream
      *
-     * @return string|ResponseInterface
      * @throws GuzzleException
      */
-    public function generateResponse(string $prompt, array $options = [], bool $stream = false): string|ResponseInterface
+    public function generateResponse(string $prompt, array $options = [], bool $stream = false): ResponseInterface
     {
         $url = self::API_ENDPOINT;
 
@@ -64,6 +63,11 @@ class ClaudeClient implements LoggerAwareInterface
         }
         if (!empty($options['topK'])) {
             $jsonBody['top_k'] = $options['topK'];
+        }
+
+        // Force streaming for this method
+        if ($stream) {
+            $jsonBody['stream'] = true;
         }
 
         try {

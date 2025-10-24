@@ -34,7 +34,7 @@ class GeminiClient implements LoggerAwareInterface
      * @param array $options
      * @param bool $stream
      *
-     * @return string|ResponseInterface
+     * @return ResponseInterface
      * @throws GuzzleException
      */
     public function generateResponse(string $prompt, array $options = [], bool $stream = false): ResponseInterface

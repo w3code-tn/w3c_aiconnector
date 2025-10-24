@@ -32,22 +32,27 @@ class OpenAIClient implements LoggerAwareInterface
      * @param array $options
      * @param bool $stream
      *
-     * @return string|ResponseInterface
      * @throws GuzzleException
      */
-    public function generateResponse(string $prompt, array $options = [], bool $stream = false): string|ResponseInterface
+    public function generateResponse(string $prompt, array $options = [], bool $stream = false): ResponseInterface
     {
         $url = self::API_ENDPOINT;
+
         $requestBody = [
             'model' => $options['model'],
             'input' => $prompt,
             'temperature' => $options['temperature'],
             'top_p' => $options['topP'],
-            'max_output_tokens' => $options['max_output_tokens']
+            'max_output_tokens' => $options['max_output_tokens'],
         ];
 
         if (!empty($options['stop'])) {
             $requestBody['stop'] = $options['stop'];
+        }
+
+        // Force streaming for this method
+        if ($stream) {
+            $requestBody['stream'] = true;
         }
 
         try {

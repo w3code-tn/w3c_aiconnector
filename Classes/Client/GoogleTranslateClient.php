@@ -32,10 +32,10 @@ class GoogleTranslateClient implements LoggerAwareInterface
      * @param array $options
      * @param bool $stream
      *
-     * @return string|ResponseInterface
+     * @return ResponseInterface
      * @throws GuzzleException
      */
-    public function generateResponse(string $prompt, array $options = []): string|ResponseInterface
+    public function generateResponse(string $prompt, array $options = []): ResponseInterface
     {
         $requestBody = [
             'q' => $prompt,
