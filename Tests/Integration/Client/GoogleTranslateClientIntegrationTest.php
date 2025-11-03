@@ -27,6 +27,7 @@ class GoogleTranslateClientIntegrationTest extends FunctionalTestCase
             [
                 'apiKey' => $apiKey,
                 'targetLang' => 'en',
+                'model' => 'google-translator'
             ]
         );
 
