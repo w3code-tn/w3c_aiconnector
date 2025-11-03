@@ -21,7 +21,7 @@ class DeepLClientTest extends FunctionalTestCase
         $mockClient->expects(self::once())
             ->method('post')
             ->with(
-                'https://api.deepl.com/v2/translate',
+                'https://api-free.deepl.com/v2/translate',
                 [
                     'form_params' => [
                         'auth_key' => 'test-api-key',

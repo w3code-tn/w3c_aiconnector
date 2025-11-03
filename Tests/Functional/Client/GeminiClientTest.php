@@ -21,7 +21,7 @@ class GeminiClientTest extends FunctionalTestCase
         $mockClient->expects(self::once())
             ->method('post')
             ->with(
-                'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=test-api-key',
+                'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=test-api-key',
                 [
                     'json' => [
                         'contents' => [
@@ -62,7 +62,7 @@ class GeminiClientTest extends FunctionalTestCase
         $mockClient->expects(self::once())
             ->method('post')
             ->with(
-                'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:streamGenerateContent?key=test-api-key',
+                'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?key=test-api-key',
                 [
                     'json' => [
                         'contents' => [
