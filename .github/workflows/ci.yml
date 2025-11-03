@@ -35,7 +35,7 @@ jobs:
       - name: Integration Tests
         env:
           CI: "true"
-          CI_PARAMS: "-e GEMINI_API_KEY -e CLAUDE_API_KEY -e OPENAI_API_KEY -e MISTRAL_API_KEY"
+          CI_PARAMS: "-e GEMINI_API_KEY -e CLAUDE_API_KEY -e OPENAI_API_KEY -e MISTRAL_API_KEY -e COHERE_API_KEY -e DEEPL_API_KEY -e GOOGLE_TRANSLATE_API_KEY"
           # API Keys
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
