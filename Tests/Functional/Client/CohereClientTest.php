@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace W3c\W3cAiconnector\Tests\Functional\Client;
@@ -11,14 +12,13 @@ use W3code\W3cAIConnector\Client\CohereClient;
 
 class CohereClientTest extends FunctionalTestCase
 {
-
     #[Test]
     public function testGenerateResponse(): void
     {
         $mockClient = $this->getMockBuilder(Client::class)
             ->onlyMethods(['post'])
             ->getMock();
-        $mockClient->expects($this->once())
+        $mockClient->expects(self::once())
             ->method('post')
             ->with(
                 'https://api.cohere.ai/v1/chat',
@@ -47,8 +47,8 @@ class CohereClientTest extends FunctionalTestCase
             ]
         );
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('test response', $response->getBody()->getContents());
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('test response', $response->getBody()->getContents());
     }
 
     #[Test]
@@ -57,7 +57,7 @@ class CohereClientTest extends FunctionalTestCase
         $mockClient = $this->getMockBuilder(Client::class)
             ->onlyMethods(['post'])
             ->getMock();
-        $mockClient->expects($this->once())
+        $mockClient->expects(self::once())
             ->method('post')
             ->with(
                 'https://api.cohere.ai/v1/chat',
@@ -88,7 +88,7 @@ class CohereClientTest extends FunctionalTestCase
             true
         );
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('test response', $response->getBody()->getContents());
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('test response', $response->getBody()->getContents());
     }
 }

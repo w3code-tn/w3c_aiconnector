@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace W3c\W3cAiconnector\Tests\Functional\Client;
@@ -17,7 +18,7 @@ class GeminiClientTest extends FunctionalTestCase
         $mockClient = $this->getMockBuilder(Client::class)
             ->onlyMethods(['post'])
             ->getMock();
-        $mockClient->expects($this->once())
+        $mockClient->expects(self::once())
             ->method('post')
             ->with(
                 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=test-api-key',
@@ -48,8 +49,8 @@ class GeminiClientTest extends FunctionalTestCase
             ]
         );
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('test response', $response->getBody()->getContents());
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('test response', $response->getBody()->getContents());
     }
 
     #[Test]
@@ -58,7 +59,7 @@ class GeminiClientTest extends FunctionalTestCase
         $mockClient = $this->getMockBuilder(Client::class)
             ->onlyMethods(['post'])
             ->getMock();
-        $mockClient->expects($this->once())
+        $mockClient->expects(self::once())
             ->method('post')
             ->with(
                 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:streamGenerateContent?key=test-api-key',
@@ -90,7 +91,7 @@ class GeminiClientTest extends FunctionalTestCase
             true
         );
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('test response', $response->getBody()->getContents());
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('test response', $response->getBody()->getContents());
     }
 }

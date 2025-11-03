@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace W3c\W3cAiconnector\Tests\Functional\Client;
@@ -17,7 +18,7 @@ class ClaudeClientTest extends FunctionalTestCase
         $mockClient = $this->getMockBuilder(Client::class)
             ->onlyMethods(['post'])
             ->getMock();
-        $mockClient->expects($this->once())
+        $mockClient->expects(self::once())
             ->method('post')
             ->with(
                 'https://api.anthropic.com/v1/messages',
@@ -55,8 +56,8 @@ class ClaudeClientTest extends FunctionalTestCase
             ]
         );
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('test response', $response->getBody()->getContents());
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('test response', $response->getBody()->getContents());
     }
 
     #[Test]
@@ -65,7 +66,7 @@ class ClaudeClientTest extends FunctionalTestCase
         $mockClient = $this->getMockBuilder(Client::class)
             ->onlyMethods(['post'])
             ->getMock();
-        $mockClient->expects($this->once())
+        $mockClient->expects(self::once())
             ->method('post')
             ->with(
                 'https://api.anthropic.com/v1/messages',
@@ -105,7 +106,7 @@ class ClaudeClientTest extends FunctionalTestCase
             true
         );
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('test response', $response->getBody()->getContents());
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('test response', $response->getBody()->getContents());
     }
 }

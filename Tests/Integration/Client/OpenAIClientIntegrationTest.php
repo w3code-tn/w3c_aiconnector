@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace W3c\W3cAiconnector\Tests\Integration\Client;
@@ -15,7 +16,7 @@ class OpenAIClientIntegrationTest extends FunctionalTestCase
     {
         $apiKey = getenv('OPENAI_API_KEY');
         if (!$apiKey) {
-            $this->markTestSkipped('OPENAI_API_KEY environment variable not set');
+            self::markTestSkipped('OPENAI_API_KEY environment variable not set');
         }
 
         $client = new OpenAIClient();
@@ -32,7 +33,7 @@ class OpenAIClientIntegrationTest extends FunctionalTestCase
             ]
         );
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertNotEmpty($response->getBody()->getContents());
+        self::assertSame(200, $response->getStatusCode());
+        self::assertNotEmpty($response->getBody()->getContents());
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace W3c\W3cAiconnector\Tests\Integration\Client;
@@ -15,7 +16,7 @@ class GoogleTranslateClientIntegrationTest extends FunctionalTestCase
     {
         $apiKey = getenv('GOOGLE_TRANSLATE_API_KEY');
         if (!$apiKey) {
-            $this->markTestSkipped('GOOGLE_TRANSLATE_API_KEY environment variable not set');
+            self::markTestSkipped('GOOGLE_TRANSLATE_API_KEY environment variable not set');
         }
 
         $client = new GoogleTranslateClient();
@@ -25,11 +26,11 @@ class GoogleTranslateClientIntegrationTest extends FunctionalTestCase
             'test prompt',
             [
                 'apiKey' => $apiKey,
-                'targetLang' => 'en'
+                'targetLang' => 'en',
             ]
         );
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertNotEmpty($response->getBody()->getContents());
+        self::assertSame(200, $response->getStatusCode());
+        self::assertNotEmpty($response->getBody()->getContents());
     }
 }

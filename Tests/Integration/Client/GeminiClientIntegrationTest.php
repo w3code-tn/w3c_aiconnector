@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace W3c\W3cAiconnector\Tests\Integration\Client;
@@ -15,7 +16,7 @@ class GeminiClientIntegrationTest extends FunctionalTestCase
     {
         $apiKey = getenv('GEMINI_API_KEY');
         if (!$apiKey) {
-            $this->markTestSkipped('GEMINI_API_KEY environment variable not set');
+            self::markTestSkipped('GEMINI_API_KEY environment variable not set');
         }
 
         $client = new GeminiClient();
@@ -29,7 +30,7 @@ class GeminiClientIntegrationTest extends FunctionalTestCase
             ]
         );
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertNotEmpty($response->getBody()->getContents());
+        self::assertSame(200, $response->getStatusCode());
+        self::assertNotEmpty($response->getBody()->getContents());
     }
 }

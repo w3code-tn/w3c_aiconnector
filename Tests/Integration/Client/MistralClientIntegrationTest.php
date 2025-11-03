@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace W3c\W3cAiconnector\Tests\Integration\Client;
@@ -15,7 +16,7 @@ class MistralClientIntegrationTest extends FunctionalTestCase
     {
         $apiKey = getenv('MISTRAL_API_KEY');
         if (!$apiKey) {
-            $this->markTestSkipped('MISTRAL_API_KEY environment variable not set');
+            self::markTestSkipped('MISTRAL_API_KEY environment variable not set');
         }
 
         $client = new MistralClient();
@@ -34,7 +35,7 @@ class MistralClientIntegrationTest extends FunctionalTestCase
             ]
         );
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertNotEmpty($response->getBody()->getContents());
+        self::assertSame(200, $response->getStatusCode());
+        self::assertNotEmpty($response->getBody()->getContents());
     }
 }

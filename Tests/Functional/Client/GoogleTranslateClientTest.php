@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace W3c\W3cAiconnector\Tests\Functional\Client;
@@ -17,7 +18,7 @@ class GoogleTranslateClientTest extends FunctionalTestCase
         $mockClient = $this->getMockBuilder(Client::class)
             ->onlyMethods(['post'])
             ->getMock();
-        $mockClient->expects($this->once())
+        $mockClient->expects(self::once())
             ->method('post')
             ->with(
                 'https://translation.googleapis.com/language/translate/v2?key=test-api-key',
@@ -41,7 +42,7 @@ class GoogleTranslateClientTest extends FunctionalTestCase
             ]
         );
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('test response', $response->getBody()->getContents());
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('test response', $response->getBody()->getContents());
     }
 }
