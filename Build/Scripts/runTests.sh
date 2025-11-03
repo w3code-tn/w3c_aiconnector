@@ -246,7 +246,9 @@ else
   RUNTESTS_PHPUNIT_FILE_FUNCTIONALTEST="${RUNTESTS_PHPUNIT_FILE_FUNCTIONALTEST:=Build/phpunit/FunctionalTests.xml}"
   RUNTESTS_DIR_PHPUNIT_FUNCTIONAL="${RUNTESTS_DIR_PHPUNIT_FUNCTIONAL:=Build/phpunit/}"
   DOCKER_ENV_FILE=../../.env
-  CI_PARAMS="--env-file ${DOCKER_ENV_FILE}"
+  if [ -f "${DOCKER_ENV_FILE}" ]; then
+    CI_PARAMS="--env-file ${DOCKER_ENV_FILE}"
+  fi
 fi
 
 # Now go into the actual "base" directory.
