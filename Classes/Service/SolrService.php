@@ -1,83 +1,67 @@
 <?php
+
 declare(strict_types=1);
 
-namespace W3code\W3cAiconnector\Service;
+namespace W3code\W3cAIConnector\Service;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
-use Psr\Log\LoggerInterface;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use Psr\Log\LoggerAwareTrait;
+use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationExtensionNotConfiguredException;
+use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationPathDoesNotExistException;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use W3code\W3cAIConnector\Client\SolrClient;
+use W3code\W3cAIConnector\Utility\ConfigurationUtility;
 
-class SolrService
+/**
+ * Class SolrService
+ */
+class SolrService implements ServiceInterface
 {
-    private const SOLR_ENDPOINT = 'http://solr:8983/solr/';
+    use LoggerAwareTrait;
 
-    private LoggerInterface $logger;
-    private array $extConf;
+    private array $extConfig;
+    protected ?SolrClient $client = null;
 
-    public function __construct(LoggerInterface $logger)
+    /**
+     * @throws ExtensionConfigurationPathDoesNotExistException
+     * @throws ExtensionConfigurationExtensionNotConfiguredException
+     */
+    public function __construct()
     {
-        $this->logger = $logger;
-        $this->extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class)
-            ->get('w3c_aiconnector');
+        $this->extConfig = ConfigurationUtility::getExtensionConfiguration('w3c_aiconnector')['solr'] ?? [];
+        $this->client = new SolrClient();
     }
 
+    /**
+     * @param string $keywords
+     * @param SiteLanguage $siteLanguage
+     * @param array $filters
+     * @return array
+     */
     public function search(string $keywords, SiteLanguage $siteLanguage, array $filters = []): array
     {
         $solrCore = 'core_' . strtolower($siteLanguage->getHreflang());
-        $solrUrl = self::SOLR_ENDPOINT . $solrCore . '/select?q=' . urlencode($keywords);
 
-        if (!empty($filters)) {
-            foreach ($filters as $filter) {
-                $solrUrl .= '&fq=' . urlencode(stripslashes($filter));
-            }
-            $this->logger->info('Solr Filters', ['filters' => $filters]);
-        }
+        $response = $this->client->generateResponse($solrCore, $this->extConfig, $keywords, $filters);
+        $data = json_decode((string)$response->getBody(), true);
 
-        if (!empty($this->extConf['hl_enabled'])) {
-            $solrUrl .= '&hl=true';
-            if (!empty($this->extConf['hl_fl'])) {
-                $solrUrl .= '&hl.fl=' . urlencode($this->extConf['hl_fl']);
-            }
-            if (!empty($this->extConf['hl_snippets'])) {
-                $solrUrl .= '&hl.snippets=' . (int)$this->extConf['hl_snippets'];
-            }
-            if (!empty($this->extConf['hl_fragsize'])) {
-                $solrUrl .= '&hl.fragsize=' . (int)$this->extConf['hl_fragsize'];
-            }
-            if (!empty($this->extConf['hl_mergeContiguous'])) {
-                $solrUrl .= '&hl.mergeContiguous=true';
-            }
-        }
-
-        $client = new Client();
         $results = [];
-        try {
-            $response = $client->get($solrUrl);
-            $solrData = json_decode((string)$response->getBody(), true);
 
-            $docs = $solrData['response']['docs'] ?? [];
-            if (!empty($this->extConf['hl_enabled']) && isset($solrData['highlighting'])) {
-                $highlighting = $solrData['highlighting'];
-                $highlightField = $this->extConf['hl_fl'] ?? 'contenu';
+        $docs = $data['response']['docs'] ?? [];
+        if (!empty($this->extConfig['hl_enabled']) && isset($data['highlighting'])) {
+            $highlighting = $data['highlighting'];
+            $highlightField = $this->extConfig['hl_fl'] ?? 'contenu';
 
-                foreach ($docs as &$doc) {
-                    $id = $doc['id'];
-                    if (isset($highlighting[$id]) && !empty($highlighting[$id][$highlightField])) {
-                        $doc['contenu'] = implode(' ... ', $highlighting[$id][$highlightField]);
-                    } else {
-                        unset($doc['contenu']);
-                    }
+            foreach ($docs as &$doc) {
+                $id = $doc['id'];
+                if (isset($highlighting[$id]) && !empty($highlighting[$id][$highlightField])) {
+                    $doc['contenu'] = implode(' ... ', $highlighting[$id][$highlightField]);
+                } else {
+                    unset($doc['contenu']);
                 }
             }
-            $results = $docs;
-
-        } catch (GuzzleException $e) {
-            $this->logger->error('Solr Error', ['error' => $e->getMessage()]);
         }
 
+        $results = $docs;
         return $results;
     }
 }
