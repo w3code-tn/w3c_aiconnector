@@ -10,20 +10,10 @@
         }
     ],
     "require": {
-<<<<<<< Updated upstream
-        "php": ">=8.1",
-        "typo3/cms-core": "^12.4 || ^13.4",
-        "typo3/coding-standards": "^0.8.0"
-=======
-<<<<<<< Updated upstream
-        "typo3/cms-core": "^12.4 || ^13.4"
-=======
         "php": ">=8.1",
         "typo3/cms-core": "^12.4 || ^13.4",
         "typo3/coding-standards": "^0.8.0",
         "typo3/testing-framework": "^9.2"
->>>>>>> Stashed changes
->>>>>>> Stashed changes
     },
     "autoload": {
         "psr-4": {
