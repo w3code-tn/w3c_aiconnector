@@ -25,21 +25,21 @@ class GeminiClientIntegrationTest extends FunctionalTestCase
 
         $payload = [
             'apiKey' => $apiKey,
-            'model' => 'gemini-2.0-flash'
+            'model' => 'gemini-2.0-flash',
         ];
 
         $fallbackOptionsList = [
             [
                 'apiKey' => $apiKey,
-                'model' => 'gemini-2.5-pro'
+                'model' => 'gemini-2.5-pro',
             ],
             [
                 'apiKey' => $apiKey,
-                'model' => 'gemini-2.5-flash'
+                'model' => 'gemini-2.5-flash',
             ],
             [
                 'apiKey' => $apiKey,
-                'model' => 'gemini-2.0-flash'
+                'model' => 'gemini-2.0-flash',
             ],
         ];
 

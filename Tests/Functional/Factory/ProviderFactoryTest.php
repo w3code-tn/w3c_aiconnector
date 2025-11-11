@@ -9,7 +9,6 @@ use PHPUnit\Framework\Attributes\Test;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 use W3code\W3cAIConnector\Factory\ProviderFactory;
 use W3code\W3cAIConnector\Provider\ProviderInterface;
-use W3code\W3cAIConnector\Utility\ConfigurationUtility;
 
 class ProviderFactoryTest extends FunctionalTestCase
 {

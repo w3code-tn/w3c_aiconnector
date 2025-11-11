@@ -31,27 +31,27 @@ class CohereClientIntegrationTest extends FunctionalTestCase
         $fallbackOptionsList = [
             [
                 'apiKey' => $apiKey,
-                'model' => 'command-a-03-2025'
+                'model' => 'command-a-03-2025',
             ],
             [
                 'apiKey' => $apiKey,
-                'model' => 'command-r7b-12-2024'
+                'model' => 'command-r7b-12-2024',
             ],
             [
                 'apiKey' => $apiKey,
-                'model' => 'command-a-reasoning-08-2025'
+                'model' => 'command-a-reasoning-08-2025',
             ],
             [
                 'apiKey' => $apiKey,
-                'model' => 'command-a-vision-07-2025'
+                'model' => 'command-a-vision-07-2025',
             ],
             [
                 'apiKey' => $apiKey,
-                'model' => 'command-r-08-2024'
+                'model' => 'command-r-08-2024',
             ],
             [
                 'apiKey' => $apiKey,
-                'model' => 'command-r-plus-08-2024'
+                'model' => 'command-r-plus-08-2024',
             ],
         ];
 
