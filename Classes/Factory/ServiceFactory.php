@@ -18,7 +18,6 @@ class ServiceFactory
 {
     /**
      * return the AI model provider name, e.x: gemini
-     * NOTE: override this function in any other extension to add your custom provider
      *
      * @return string
      * @throws ExtensionConfigurationExtensionNotConfiguredException
@@ -27,9 +26,6 @@ class ServiceFactory
     public function getService(): string
     {
         $extConfig = ConfigurationUtility::getExtensionConfiguration('w3c_aiconnector');
-
-        // @todo: Get the provider from the extension configuration e:x ai_search
-        // Override configuration from typoscript settings if needed
 
         return $extConfig['indexEngine'];
     }

@@ -246,9 +246,6 @@ else
   RUNTESTS_PHPUNIT_FILE_FUNCTIONALTEST="${RUNTESTS_PHPUNIT_FILE_FUNCTIONALTEST:=Build/phpunit/FunctionalTests.xml}"
   RUNTESTS_DIR_PHPUNIT_FUNCTIONAL="${RUNTESTS_DIR_PHPUNIT_FUNCTIONAL:=Build/phpunit/}"
   DOCKER_ENV_FILE=../../.env
-  if [ -f "${DOCKER_ENV_FILE}" ]; then
-    CI_PARAMS="--env-file ${DOCKER_ENV_FILE}"
-  fi
 fi
 
 # Now go into the actual "base" directory.
@@ -383,6 +380,10 @@ shift $((OPTIND - 1))
 mkdir -p .cache
 
 ${CONTAINER_BIN} network create ${NETWORK} >/dev/null
+
+if [ -f "${DOCKER_ENV_FILE}" ]; then
+  CI_PARAMS="--env-file ${DOCKER_ENV_FILE}"
+fi
 
 if [ ${CONTAINER_BIN} = "docker" ]; then
     CONTAINER_COMMON_PARAMS="${CONTAINER_INTERACTIVE} ${CI_PARAMS} --rm --network ${NETWORK} --add-host "${CONTAINER_HOST}:host-gateway" ${USERSET} -v ${CORE_ROOT}:${CORE_ROOT} -w ${CORE_ROOT}"

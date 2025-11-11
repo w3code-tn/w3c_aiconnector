@@ -40,8 +40,8 @@ jobs:
           CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
           COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
-          # GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} # IP to allow
-          # OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }} # No free plan
-          # MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }} # Free plan exceeded
-          # GOOGLE_TRANSLATE_API_KEY: ${{ secrets.GOOGLE_TRANSLATE_API_KEY }} # IP to allow
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+          # GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # GOOGLE_TRANSLATE_API_KEY: ${{ secrets.GOOGLE_TRANSLATE_API_KEY }}
+          # OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: RUNTESTS_DIR_BIN=.Build/bin/ ./Build/Scripts/runTests.sh -p 8.3 -- --testsuite Integration
