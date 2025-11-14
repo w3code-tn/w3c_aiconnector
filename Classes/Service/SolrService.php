@@ -15,7 +15,6 @@ use W3code\W3cAIConnector\Utility\ConfigurationUtility;
  */
 class SolrService implements ServiceInterface
 {
-
     private array $extConfig;
     protected ?SolrClient $client = null;
 
@@ -60,7 +59,7 @@ class SolrService implements ServiceInterface
                 }
             }
         }
-        
+
         $results = $docs;
         return $results;
     }

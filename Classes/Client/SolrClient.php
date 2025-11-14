@@ -78,7 +78,6 @@ class SolrClient implements LoggerAwareInterface
             }
 
             try {
-                file_put_contents("geminidebug.log", print_r($url, true)."\n", FILE_APPEND);
                 return $this->client->get($url);
             } catch (GuzzleException $e) {
                 $this->logger->error('Solr Error', ['error' => $e->getMessage()]);
