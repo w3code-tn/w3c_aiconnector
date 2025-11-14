@@ -48,7 +48,7 @@ class ProviderUtility
     public static function truncateSolrResults(array $config, string $basePrompt, array $results): array
     {
         $maxPromptLength = $config['maxInputTokensAllowed'];
-    
+
         $resultStrings = [];
         foreach ($results as $result) {
             $resultStrings[] = '- titre: ' . ($result['title'] ?? '') . ' - contenu: ' . ($result['content'] ?? '') . ' - URL: ' . ($result['url'] ?? '') . "\n";
