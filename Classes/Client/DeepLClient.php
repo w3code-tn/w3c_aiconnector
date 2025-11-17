@@ -28,6 +28,11 @@ class DeepLClient implements LoggerAwareInterface
         $this->client = new Client();
     }
 
+    public function setClient(Client $client): void
+    {
+        $this->client = $client;
+    }
+
     /**
      * @param string $prompt
      * @param array $options
