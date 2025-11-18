@@ -42,7 +42,7 @@ class GeminiProvider extends AbstractProvider
             ],
             'chunkSize' => (int)$config['chunkSize'],
             'maxInputTokensAllowed' => (int)$config['maxInputTokensAllowed'],
-            'maxRetries' => (int)$config['maxRetries'],
+            'maxRetries' => (int)$this->extConfig['maxRetries'],
             'fallbacks' => $this->getFallbackModels($config['fallbackModels'] ?? ''),
         ];
     }

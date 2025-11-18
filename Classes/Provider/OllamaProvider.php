@@ -39,7 +39,7 @@ class OllamaProvider extends AbstractProvider
             'system' => $config['system'],
             'chunkSize' => (int)$config['chunkSize'],
             'maxInputTokensAllowed' => (int)$config['maxInputTokensAllowed'],
-            'maxRetries' => (int)$config['maxRetries'],
+            'maxRetries' => (int)$this->extConfig['maxRetries'],
             'fallbacks' => $this->getFallbackModels($config['fallbackModels']),
         ];
     }

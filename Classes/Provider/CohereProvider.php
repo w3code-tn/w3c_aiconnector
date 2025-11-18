@@ -41,7 +41,7 @@ class CohereProvider extends AbstractProvider
             'chatHistory' => [], // Cohere expects an array of messages for chat_history
             'chunkSize' => (int)$config['chunkSize'],
             'maxInputTokensAllowed' => (int)$config['maxInputTokensAllowed'],
-            'maxRetries' => (int)$config['maxRetries'],
+            'maxRetries' => (int)$this->extConfig['maxRetries'],
             'fallbacks' => $this->getFallbackModels($config['fallbackModels']),
         ];
     }
