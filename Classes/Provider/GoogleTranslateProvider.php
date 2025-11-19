@@ -33,7 +33,7 @@ class GoogleTranslateProvider extends AbstractProvider
             'format' => $config['format'],
             'model' => $config['model'],
             'cid' => $config['cid'],
-            'maxRetries' => (int)$config['maxRetries'],
+            'maxRetries' => (int)$this->extConfig['maxRetries'],
         ];
     }
 

@@ -37,7 +37,7 @@ class OpenAIProvider extends AbstractProvider
             'stream' => (bool)$config['stream'],
             'chunkSize' => (int)$config['chunkSize'],
             'maxInputTokensAllowed' => (int)$config['maxInputTokensAllowed'],
-            'maxRetries' => (int)$config['maxRetries'],
+            'maxRetries' => (int)$this->extConfig['maxRetries'],
             'fallbacks' => $this->getFallbackModels($config['fallbackModels']),
         ];
     }
