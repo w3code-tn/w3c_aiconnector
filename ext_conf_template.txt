@@ -253,11 +253,23 @@ googleTranslate.model =
 # cat=GoogleTranslate; type=string; label=Google Translate Custom Model ID: The custom model ID to use for translation (optional).
 googleTranslate.cid =
 
+# cat=Solr; type=string; label=Solr endPoint: Solr End point.
+solr.endPoint = http://solr:8983/solr/
+
+# cat=Solr; type=select; values=lucene,dismax,edismax label=Deftype: Specifies which query parser should be used to process the main query parameter (q) i
+solr.defType = edismax
+
+# cat=Solr; type=string; label=Query Field: Solr query field
+solr.qf = content^20.0 title^40.0 description^5.0 keywords^2.0 tagsH1^5.0 tagsH2H3^3.0 tagsH4H5H6^2.0 tagsInline^1.0 description^4.0 abstract^1.0 subtitle^1.0 navtitle^1.0 author^1.0
+
+# cat=Solr; type=int; label=Number of Documents: The maximum number of documents
+solr.rows = 100
+
 # cat=Solr; type=boolean; label=Enable Highlighting: If checked, Solr will return highlighted snippets instead of the full content.
 solr.hl_enabled = 1
 
 # cat=Solr; type=string; label=Highlighting Fields: Comma-separated list of fields to generate snippets from.
-solr.hl_fl = contenu
+solr.hl_fl = content
 
 # cat=Solr; type=int; label=Number of Snippets: The maximum number of highlighted snippets to generate per field.
 solr.hl_snippets = 3
@@ -267,3 +279,6 @@ solr.hl_fragsize = 1000
 
 # cat=Solr; type=boolean; label=Merge Contiguous Fragments: If enabled, adjacent snippets are merged into one.
 solr.hl_mergeContiguous = 1
+
+# cat=Solr; type=select; values=sentence,line,word;char;whole; label=Highlighting Fields Type: Controls how the text is divided into passages for highlighting
+solr.hl_bs_type = sentence

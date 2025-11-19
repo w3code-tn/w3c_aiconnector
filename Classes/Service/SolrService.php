@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace W3code\W3cAIConnector\Service;
 
-use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationExtensionNotConfiguredException;
 use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationPathDoesNotExistException;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
@@ -16,8 +15,6 @@ use W3code\W3cAIConnector\Utility\ConfigurationUtility;
  */
 class SolrService implements ServiceInterface
 {
-    use LoggerAwareTrait;
-
     private array $extConfig;
     protected ?SolrClient $client = null;
 
@@ -49,14 +46,16 @@ class SolrService implements ServiceInterface
         $docs = $data['response']['docs'] ?? [];
         if (!empty($this->extConfig['hl_enabled']) && isset($data['highlighting'])) {
             $highlighting = $data['highlighting'];
-            $highlightField = $this->extConfig['hl_fl'] ?? 'contenu';
+            $highlightField = $this->extConfig['hl_fl'] ?? 'content';
 
             foreach ($docs as &$doc) {
                 $id = $doc['id'];
                 if (isset($highlighting[$id]) && !empty($highlighting[$id][$highlightField])) {
-                    $doc['contenu'] = implode(' ... ', $highlighting[$id][$highlightField]);
+                    $doc[$highlightField] = implode(' ... ', $highlighting[$id][$highlightField]);
+                    // Clean up multiple dots/spaces sequences (e.g. "....." or "... ...") into a single " ... "
+                    $doc[$highlightField] = preg_replace('/(?:\s*\.){2,}\s*/', ' ... ', $doc[$highlightField] ?? '');
                 } else {
-                    unset($doc['contenu']);
+                    unset($doc[$highlightField]);
                 }
             }
         }

@@ -33,7 +33,7 @@ use W3code\W3cAIConnector\Service\SolrService;
     // AI Services list
     $GLOBALS['TYPO3_CONF_VARS']['EXT'][$extensionName]['solr'] = SolrService::class;
 
-    $GLOBALS['TYPO3_CONF_VARS']['LOG']['W3code']['W3cAIConnector']['Provider']['writerConfiguration'] = [
+    $GLOBALS['TYPO3_CONF_VARS']['LOG']['W3code']['W3cAIConnector']['writerConfiguration'] = [
         // Configure for INFO level and higher
         LogLevel::INFO => [
             FileWriter::class => [
