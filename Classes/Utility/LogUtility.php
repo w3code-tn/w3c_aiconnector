@@ -27,6 +27,14 @@ class LogUtility
             $logOptions['apiKey'] = ProviderUtility::maskApiKey($logOptions['apiKey']);
         }
 
+        if (isset($options['target_lang'])) {
+            $options['model'] = 'deepL';
+        }
+
+        if (isset($options['targetLang'])) {
+            $options['model'] = 'googleTranslate';
+        }
+
         $logger->error(
             $options['model'] . ' error: ',
             [

@@ -38,7 +38,7 @@ class DeepLProvider extends AbstractProvider
             'outline_detection' => (bool)$config['outlineDetection'],
             'non_splitting_tags' => $config['nonSplittingTags'],
             'apiVersion' => $config['apiVersion'],
-            'maxRetries' => (int)$config['maxRetries'],
+            'maxRetries' => (int)$this->extConfig['maxRetries'],
         ];
     }
 

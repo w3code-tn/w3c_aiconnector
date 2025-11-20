@@ -42,7 +42,7 @@ class ClaudeProvider extends AbstractProvider
             'topK' => (int)$config['topK'],
             'chunkSize' => (int)$config['chunkSize'],
             'maxInputTokensAllowed' => (int)$config['maxInputTokensAllowed'],
-            'maxRetries' => (int)$config['maxRetries'],
+            'maxRetries' => (int)$this->extConfig['maxRetries'],
             'fallbacks' => $this->getFallbackModels($config['fallbackModels']),
         ];
     }
