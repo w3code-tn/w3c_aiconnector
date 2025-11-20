@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace W3code\W3cAIConnector\Client;
 
+use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -85,9 +87,9 @@ class ClaudeClient implements LoggerAwareInterface
                 'json' => $jsonBody,
                 'stream' => $stream,
             ]);
-        } catch (GuzzleException $e) {
+        } catch (ClientException $e) {
             LogUtility::logException($options);
-            throw $e;
+            throw new Exception($e->getMessage(), 1509741909, $e);
         }
     }
 }
