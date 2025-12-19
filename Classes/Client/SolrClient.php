@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace W3code\W3cAIConnector\Client;
 
+use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -85,6 +87,12 @@ class SolrClient implements LoggerAwareInterface
             }
         }
 
+        try {
+            return $this->client->get($url);
+        } catch (ClientException $e) {
+            $this->logger->error('Solr Error', ['error' => $e->getMessage()]);
+            throw new Exception($e->getMessage(), 1509741909, $e);
+        }
         throw new \RuntimeException('Solr endpoint is not configured.');
     }
 }
