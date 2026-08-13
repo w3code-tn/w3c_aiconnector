@@ -1,8 +1,35 @@
-# cat=general; type=options[gemini,openai,ollama,claude,mistral,cohere,deepl,googleTranslate,custom]; label=AI Provider: Select the AI provider to use.
+# cat=general; type=options[gemini,openai,ollama,claude,mistral,cohere,deepl,googleTranslate,bedrock,custom]; label=AI Provider: Select the AI provider to use.
 provider = gemini
 
 # cat=general; type=int; label=AI max retry attempts.
 maxRetries = 5
+
+# cat=Bedrock; type=string; label=Bedrock Access Key ID: Your AWS Access Key ID.
+bedrock.accessKeyId =
+
+# cat=Bedrock; type=string; label=Bedrock Secret Access Key: Your AWS Secret Access Key.
+bedrock.secretAccessKey =
+
+# cat=Bedrock; type=string; label=Bedrock Region: The AWS region to use (e.g., us-east-1).
+bedrock.region = us-east-1
+
+# cat=Bedrock; type=string; label=Bedrock Model ID: The Bedrock model ID to use.
+bedrock.modelId = anthropic.claude-3-sonnet-20240229-v1:0
+
+# cat=Bedrock; type=int; label=Bedrock Max Tokens: The maximum number of tokens to generate.
+bedrock.maxTokens = 1024
+
+# cat=Bedrock; type=float; label=Bedrock Temperature: The temperature for the Bedrock model.
+bedrock.temperature = 1.0
+
+# cat=Bedrock; type=int; label=Bedrock Chunk Size: The chunk size when using stream mode.
+bedrock.chunkSize = 100
+
+# cat=Bedrock; type=string; label=Bedrock Fallback Models: Comma-separated list of Bedrock models to use as fallback.
+bedrock.fallbackModels =
+
+# cat=Bedrock; type=int; label=Bedrock Max Input Tokens Allowed: The max input tokens allowed for the Bedrock model.
+bedrock.maxInputTokensAllowed = 200000
 
 # cat=Gemini; type=string; label=Gemini API Key: Your Google Gemini API key.
 gemini.apiKey =
