@@ -16,6 +16,7 @@ use W3code\W3cAIConnector\Provider\MistralProvider;
 use W3code\W3cAIConnector\Provider\OllamaProvider;
 use W3code\W3cAIConnector\Provider\OpenAIProvider;
 use W3code\W3cAIConnector\Service\SolrService;
+use W3code\W3cAIConnector\Provider\BedrockProvider;
 
 (function () {
     $extensionName = 'w3c_aiconnector';
@@ -29,6 +30,7 @@ use W3code\W3cAIConnector\Service\SolrService;
     $GLOBALS['TYPO3_CONF_VARS']['EXT'][$extensionName]['mistral'] = MistralProvider::class;
     $GLOBALS['TYPO3_CONF_VARS']['EXT'][$extensionName]['openai'] = OpenAIProvider::class;
     $GLOBALS['TYPO3_CONF_VARS']['EXT'][$extensionName]['ollama'] = OllamaProvider::class;
+    $GLOBALS['TYPO3_CONF_VARS']['EXT'][$extensionName]['bedrock'] = BedrockProvider::class;
 
     // AI Services list
     $GLOBALS['TYPO3_CONF_VARS']['EXT'][$extensionName]['solr'] = SolrService::class;
