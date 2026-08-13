@@ -6,12 +6,12 @@ namespace W3code\W3cAIConnector\Tests\Functional\Provider;
 
 use Aws\BedrockRuntime\BedrockRuntimeClient;
 use Aws\Result;
+use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\Attributes\Test;
-use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
-use W3code\W3cAIConnector\Provider\BedrockProvider;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use GuzzleHttp\Psr7\Utils;
+use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
+use W3code\W3cAIConnector\Provider\BedrockProvider;
 
 class BedrockProviderTest extends FunctionalTestCase
 {
@@ -28,13 +28,13 @@ class BedrockProviderTest extends FunctionalTestCase
             'chunkSize' => 10,
             'maxInputTokensAllowed' => 1000,
             'fallbackModels' => '',
-        ]
+        ],
     ];
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Mocking ExtensionConfiguration to return our test config
         $extensionConfigurationMock = $this->getMockBuilder(ExtensionConfiguration::class)
             ->disableOriginalConstructor()
@@ -54,23 +54,24 @@ class BedrockProviderTest extends FunctionalTestCase
         $mockResponseBody = [
             'content' => [
                 [
-                    'text' => 'Hello from Bedrock Claude'
-                ]
-            ]
+                    'text' => 'Hello from Bedrock Claude',
+                ],
+            ],
         ];
 
         $mockBedrockClient->expects(self::once())
             ->method('invokeModel')
-            ->with(self::callback(function($args) {
-                return $args['modelId'] === 'anthropic.claude-3-sonnet-20240229-v1:0' &&
-                       str_contains($args['body'], 'anthropic_version');
+            ->with(self::callback(function ($args) {
+                return $args['modelId'] === 'anthropic.claude-3-sonnet-20240229-v1:0'
+                       && str_contains($args['body'], 'anthropic_version');
             }))
             ->willReturn(new Result([
-                'body' => Utils::streamFor(json_encode($mockResponseBody))
+                'body' => Utils::streamFor(json_encode($mockResponseBody)),
             ]));
 
-        $provider = new class($mockBedrockClient) extends BedrockProvider {
-            public function __construct($client) {
+        $provider = new class ($mockBedrockClient) extends BedrockProvider {
+            public function __construct($client)
+            {
                 parent::__construct();
                 $this->client = $client;
             }
@@ -89,21 +90,22 @@ class BedrockProviderTest extends FunctionalTestCase
             ->getMock();
 
         $mockResponseBody = [
-            'generation' => 'Hello from Bedrock Llama'
+            'generation' => 'Hello from Bedrock Llama',
         ];
 
         $mockBedrockClient->expects(self::once())
             ->method('invokeModel')
-            ->with(self::callback(function($args) {
-                return $args['modelId'] === 'meta.llama-test' &&
-                       str_contains($args['body'], 'prompt');
+            ->with(self::callback(function ($args) {
+                return $args['modelId'] === 'meta.llama-test'
+                       && str_contains($args['body'], 'prompt');
             }))
             ->willReturn(new Result([
-                'body' => Utils::streamFor(json_encode($mockResponseBody))
+                'body' => Utils::streamFor(json_encode($mockResponseBody)),
             ]));
 
-        $provider = new class($mockBedrockClient) extends BedrockProvider {
-            public function __construct($client) {
+        $provider = new class ($mockBedrockClient) extends BedrockProvider {
+            public function __construct($client)
+            {
                 parent::__construct();
                 $this->client = $client;
             }
@@ -129,11 +131,12 @@ class BedrockProviderTest extends FunctionalTestCase
         $mockBedrockClient->expects(self::once())
             ->method('invokeModelWithResponseStream')
             ->willReturn(new Result([
-                'body' => $events
+                'body' => $events,
             ]));
 
-        $provider = new class($mockBedrockClient) extends BedrockProvider {
-            public function __construct($client) {
+        $provider = new class ($mockBedrockClient) extends BedrockProvider {
+            public function __construct($client)
+            {
                 parent::__construct();
                 $this->client = $client;
             }
@@ -161,7 +164,7 @@ class BedrockProviderTest extends FunctionalTestCase
                 'chunkSize' => 10,
                 'maxInputTokensAllowed' => 1000,
                 'fallbackModels' => '',
-            ]
+            ],
         ];
 
         $extensionConfigurationMock = $this->getMockBuilder(ExtensionConfiguration::class)

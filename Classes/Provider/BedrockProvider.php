@@ -181,10 +181,10 @@ class BedrockProvider extends AbstractProvider
                         'content' => [
                             [
                                 'type' => 'text',
-                                'text' => $prompt
-                            ]
-                        ]
-                    ]
+                                'text' => $prompt,
+                            ],
+                        ],
+                    ],
                 ],
                 'temperature' => $options['temperature'],
             ];
