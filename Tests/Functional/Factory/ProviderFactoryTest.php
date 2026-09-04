@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace W3c\W3cAiconnector\Tests\Functional\Factory;
+namespace W3code\W3cAIConnector\Tests\Functional\Factory;
 
 use Exception;
 use PHPUnit\Framework\Attributes\Test;
@@ -12,6 +12,10 @@ use W3code\W3cAIConnector\Provider\ProviderInterface;
 
 class ProviderFactoryTest extends FunctionalTestCase
 {
+    protected array $testExtensionsToLoad = [
+        'w3code/w3c-aiconnector',
+    ];
+
     protected function setUp(): void
     {
         parent::setUp();

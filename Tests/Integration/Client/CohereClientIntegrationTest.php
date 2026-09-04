@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace W3c\W3cAiconnector\Tests\Integration\Client;
+namespace W3code\W3cAIConnector\Tests\Integration\Client;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
