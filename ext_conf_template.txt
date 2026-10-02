@@ -282,3 +282,18 @@ solr.hl_mergeContiguous = 1
 
 # cat=Solr; type=select; values=sentence,line,word;char;whole; label=Highlighting Fields Type: Controls how the text is divided into passages for highlighting
 solr.hl_bs_type = sentence
+
+# cat=BedrockKnowledgeBase; type=string; label=AWS Region: The region of the knowledge base (e.g. us-east-1). AWS credentials come from the AWS SDK default provider chain (IAM role, environment, shared config).
+bedrockKnowledgeBase.region = eu-north-1
+
+# cat=BedrockKnowledgeBase; type=string; label=Knowledge Base ID: The ID of the Bedrock knowledge base.
+bedrockKnowledgeBase.knowledgeBaseId =
+
+# cat=BedrockKnowledgeBase; type=string; label=Data Source ID: The ID of the custom data source fed by the Solr indexing. Leave empty to disable the synchronization.
+bedrockKnowledgeBase.dataSourceId =
+
+# cat=BedrockKnowledgeBase; type=string; label=Model ARN: The ARN of the model or inference profile generating the answers (e.g. arn:aws:bedrock:us-east-1::foundation-model/<model-id>).
+bedrockKnowledgeBase.modelArn =
+
+# cat=BedrockKnowledgeBase; type=int+; label=Number of Results: The maximum number of source chunks retrieved to generate an answer (1-100).
+bedrockKnowledgeBase.numberOfResults = 5

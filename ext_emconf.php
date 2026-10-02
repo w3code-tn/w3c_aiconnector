@@ -14,6 +14,8 @@ $EM_CONF['w3c_aiconnector'] = [
             'typo3' => '13.4.0-13.4.99',
         ],
         'conflicts' => [],
-        'suggests' => [],
+        'suggests' => [
+            'solr' => '',
+        ],
     ]
 ];

@@ -7,6 +7,7 @@ defined('TYPO3') or die();
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Log\LogLevel;
 use TYPO3\CMS\Core\Log\Writer\FileWriter;
+use W3code\W3cAIConnector\Hook\RemoveSolrGarbageFromBedrockKnowledgeBase;
 use W3code\W3cAIConnector\Provider\ClaudeProvider;
 use W3code\W3cAIConnector\Provider\CohereProvider;
 use W3code\W3cAIConnector\Provider\DeepLProvider;
@@ -32,6 +33,9 @@ use W3code\W3cAIConnector\Service\SolrService;
 
     // AI Services list
     $GLOBALS['TYPO3_CONF_VARS']['EXT'][$extensionName]['solr'] = SolrService::class;
+
+    // Remove from the Bedrock Knowledge Base the records removed from the Solr index
+    $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['solr']['postProcessGarbageCollector'][] = RemoveSolrGarbageFromBedrockKnowledgeBase::class;
 
     $GLOBALS['TYPO3_CONF_VARS']['LOG']['W3code']['W3cAIConnector']['writerConfiguration'] = [
         // Configure for INFO level and higher

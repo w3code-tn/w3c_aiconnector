@@ -11,9 +11,13 @@
     ],
     "require": {
         "php": ">=8.1",
+        "aws/aws-sdk-php": "^3.334",
         "typo3/cms-core": "^12.4 || ^13.4",
         "typo3/coding-standards": "^0.8.0",
         "typo3/testing-framework": "^8.2"
+    },
+    "suggest": {
+        "apache-solr-for-typo3/solr": "Feeds the Amazon Bedrock Knowledge Base with the documents indexed in Solr"
     },
     "autoload": {
         "psr-4": {

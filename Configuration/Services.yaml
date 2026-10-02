@@ -11,3 +11,11 @@ services:
   W3code\W3cAIConnector\Service\SolrService:
     public: true
     shared: false
+
+  W3code\W3cAIConnector\Service\BedrockKnowledgeBaseService:
+    public: true
+
+  W3code\W3cAIConnector\EventListener\IndexSolrDocumentsInBedrockKnowledgeBase:
+    tags:
+      - name: event.listener
+        identifier: 'w3c-aiconnector/index-solr-documents-in-bedrock-knowledge-base'
