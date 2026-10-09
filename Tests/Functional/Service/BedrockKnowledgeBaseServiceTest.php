@@ -169,6 +169,53 @@ class BedrockKnowledgeBaseServiceTest extends FunctionalTestCase
     }
 
     #[Test]
+    public function testRetrieveReturnsTheRelevantPassages(): void
+    {
+        $this->mockHandler->append(function (CommandInterface $command): Result {
+            self::assertSame('Retrieve', $command->getName());
+            self::assertSame('KB12345678', $command['knowledgeBaseId']);
+            self::assertSame(['text' => 'worker fatigue'], $command['retrievalQuery']);
+            self::assertSame(['vectorSearchConfiguration' => ['numberOfResults' => 3]], $command['retrievalConfiguration']);
+
+            return new Result([
+                'retrievalResults' => [
+                    [
+                        'score' => 0.59,
+                        'content' => ['text' => 'Managing worker fatigue', 'type' => 'TEXT'],
+                        'location' => ['type' => 'CUSTOM', 'customDocumentLocation' => ['id' => 'site/sys_file/52/0']],
+                        'metadata' => ['title' => 'REGDOC-2.2.4', 'url' => 'https://w3code.tn/fileadmin/documents/en/regdoc.pdf'],
+                    ],
+                ],
+            ]);
+        });
+
+        self::assertSame([
+            [
+                'score' => 0.59,
+                'content' => 'Managing worker fatigue',
+                'location' => ['type' => 'CUSTOM', 'customDocumentLocation' => ['id' => 'site/sys_file/52/0']],
+                'metadata' => ['title' => 'REGDOC-2.2.4', 'url' => 'https://w3code.tn/fileadmin/documents/en/regdoc.pdf'],
+            ],
+        ], $this->subject->retrieve('worker fatigue'));
+    }
+
+    #[Test]
+    public function testRetrieveLeavesOutPassagesBelowTheMinimumScore(): void
+    {
+        $this->mockHandler->append(new Result([
+            'retrievalResults' => [
+                ['score' => 0.51, 'content' => ['text' => 'relevant']],
+                ['score' => 0.36, 'content' => ['text' => 'nearest but unrelated']],
+            ],
+        ]));
+
+        $passages = $this->subject->retrieve('blablabla');
+
+        self::assertSame(0.45, $this->subject->getMinimumScore());
+        self::assertSame(['relevant'], array_column($passages, 'content'));
+    }
+
+    #[Test]
     public function testIngestDocumentsSendsBatchesOfInlineDocuments(): void
     {
         $documents = [];

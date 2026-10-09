@@ -19,3 +19,23 @@ services:
     tags:
       - name: event.listener
         identifier: 'w3c-aiconnector/index-solr-documents-in-bedrock-knowledge-base'
+
+  W3code\W3cAIConnector\EventListener\IndexSolrFilesInBedrockKnowledgeBase:
+    tags:
+      - name: event.listener
+        identifier: 'w3c-aiconnector/index-solr-files-in-bedrock-knowledge-base'
+
+  W3code\W3cAIConnector\EventListener\RemoveSolrFilesFromBedrockKnowledgeBase:
+    tags:
+      - name: event.listener
+        identifier: 'w3c-aiconnector/remove-solr-file-from-bedrock-knowledge-base'
+        method: removeItem
+      - name: event.listener
+        identifier: 'w3c-aiconnector/remove-solr-files-from-bedrock-knowledge-base'
+        method: removeItems
+
+  W3code\W3cAIConnector\Command\AskKnowledgeBaseCommand:
+    tags:
+      - name: console.command
+        command: 'aiconnector:knowledge-base:ask'
+        description: 'Asks the Amazon Bedrock Knowledge Base a question'

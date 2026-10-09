@@ -73,6 +73,45 @@ class BedrockKnowledgeBaseService
     }
 
     /**
+     * searches the knowledge base content most relevant to a query, without generating an answer.
+     * Passages scoring below the minimum score are left out: a vector search always returns its nearest passages,
+     * even for questions the knowledge base knows nothing about.
+     *
+     * @param array $configuration overrides of the AWS retrievalConfiguration, e.g. a filter
+     *
+     * @return list<array{score: float, content: string, location: array, metadata: array}>
+     *
+     * @throws AwsException
+     */
+    public function retrieve(string $query, array $configuration = []): array
+    {
+        $result = $this->getRuntimeClient()->retrieve([
+            'knowledgeBaseId' => $this->config['knowledgeBaseId'] ?? '',
+            'retrievalQuery' => ['text' => $query],
+            'retrievalConfiguration' => array_replace_recursive([
+                'vectorSearchConfiguration' => ['numberOfResults' => (int)($this->config['numberOfResults'] ?? 5)],
+            ], $configuration),
+        ]);
+
+        $passages = array_map(static fn(array $retrievalResult): array => [
+            'score' => (float)($retrievalResult['score'] ?? 0),
+            'content' => $retrievalResult['content']['text'] ?? '',
+            'location' => $retrievalResult['location'] ?? [],
+            'metadata' => $retrievalResult['metadata'] ?? [],
+        ], $result['retrievalResults'] ?? []);
+
+        return array_values(array_filter($passages, fn(array $passage): bool => $passage['score'] >= $this->getMinimumScore()));
+    }
+
+    /**
+     * minimum relevance score of the retrieved passages, from 0 (everything) to 1
+     */
+    public function getMinimumScore(): float
+    {
+        return (float)($this->config['minimumScore'] ?? 0.45);
+    }
+
+    /**
      * adds the documents to the custom data source, replacing the ones with the same id
      *
      * @param list<array{id: string, text: string, metadata?: array<string, string|int|float>}> $documents
@@ -113,6 +152,14 @@ class BedrockKnowledgeBaseService
     public function isSyncEnabled(): bool
     {
         return !empty($this->config['knowledgeBaseId']) && !empty($this->config['dataSourceId']);
+    }
+
+    /**
+     * whether a model is configured to generate the answers
+     */
+    public function canGenerateAnswers(): bool
+    {
+        return !empty($this->config['modelArn']);
     }
 
     /**

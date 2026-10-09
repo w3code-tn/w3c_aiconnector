@@ -28,6 +28,7 @@ along with the sources the answer is based on. With EXT:solr, the knowledge base
 | `bedrockKnowledgeBase.dataSourceId`    | ID of the custom data source fed by the Solr indexing, empty to disable the synchronization |
 | `bedrockKnowledgeBase.modelArn`        | ARN of the model or inference profile generating the answers                            |
 | `bedrockKnowledgeBase.numberOfResults` | Maximum number of source chunks retrieved to generate an answer (1-100)                  |
+| `bedrockKnowledgeBase.minimumScore`    | Minimum relevance score (0-1) of the passages returned by `retrieve()`, default 0.45     |
 
 ### IAM permissions
 
@@ -58,7 +59,7 @@ Least-privilege policy for the TYPO3 IAM role (the `Synchronization` statement i
         {
             "Sid": "Synchronization",
             "Effect": "Allow",
-            "Action": ["bedrock:IngestKnowledgeBaseDocuments", "bedrock:DeleteKnowledgeBaseDocuments"],
+            "Action": ["bedrock:StartIngestionJob", "bedrock:IngestKnowledgeBaseDocuments", "bedrock:DeleteKnowledgeBaseDocuments"],
             "Resource": "arn:aws:bedrock:<region>:<account>:knowledge-base/<knowledgeBaseId>"
         }
     ]
@@ -85,13 +86,26 @@ $result['citations'][0]['sources'][0]['metadata'];   // source metadata, e.g. ti
 
 AWS errors are thrown as `Aws\Exception\AwsException`.
 
+From the command line, e.g. to test the knowledge base content:
+
+```bash
+vendor/bin/typo3 aiconnector:knowledge-base:ask "How should employers manage worker fatigue?"
+```
+
+Without `modelArn` (or with `--search-only`) the command shows the most relevant passages and their source, instead
+of a generated answer.
+
 ### Solr synchronization
 
 When `dataSourceId` is set and EXT:solr is installed:
 
 - each document indexed by EXT:solr is ingested into the custom data source, with the id `<site>/<table>/<uid>/<language>`
   and the metadata `type`, `uid`, `site`, `language`, `title` and `url` (usable in retrieval filters);
-- records removed from the Solr index (deleted, hidden...) are removed from the knowledge base;
+- with EXT:solrfal, each indexed file is ingested once with the text extracted for Solr, in the site language of its
+  metadata `language` (ISO code, e.g. `fr`) or else the default language, with the id
+  `<site>/sys_file/<file uid>/<language>` and an absolute `url`;
+- records removed from the Solr index (deleted, hidden...) and files removed from the solrfal queue are removed from the
+  knowledge base;
 - documents restricted to frontend user groups are not ingested, the knowledge base has no access control;
 - errors are logged and never interrupt the Solr indexing.
 
