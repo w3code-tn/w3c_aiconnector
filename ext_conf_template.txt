@@ -297,3 +297,6 @@ bedrockKnowledgeBase.modelArn =
 
 # cat=BedrockKnowledgeBase; type=int+; label=Number of Results: The maximum number of source chunks retrieved to generate an answer (1-100).
 bedrockKnowledgeBase.numberOfResults = 5
+
+# cat=BedrockKnowledgeBase; type=string; label=Minimum Score: The minimum relevance score (0-1) of the passages found by a search, the less relevant ones are left out (0 to keep them all).
+bedrockKnowledgeBase.minimumScore = 0.45
