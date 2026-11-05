@@ -7,6 +7,7 @@ return (new Config())
     ->setFinder(
         (new Finder())
             ->in(__DIR__ . '/../../')
+            ->exclude(['.Build', 'var'])
             ->ignoreVCSIgnored(true)
             ->notPath('/^.Build\//')
             ->notPath('/^Build\/php-cs-fixer\/php-cs-fixer.php/')

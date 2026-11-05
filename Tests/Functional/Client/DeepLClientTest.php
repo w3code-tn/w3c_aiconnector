@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace W3c\W3cAiconnector\Tests\Functional\Client;
+namespace W3code\W3cAIConnector\Tests\Functional\Client;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
@@ -23,8 +23,10 @@ class DeepLClientTest extends FunctionalTestCase
             ->with(
                 'https://api-free.deepl.com/v2/translate',
                 [
+                    'headers' => [
+                        'Authorization' => 'DeepL-Auth-Key test-api-key',
+                    ],
                     'form_params' => [
-                        'auth_key' => 'test-api-key',
                         'text' => 'test prompt',
                         'target_lang' => 'DE',
                     ],
@@ -58,8 +60,10 @@ class DeepLClientTest extends FunctionalTestCase
             ->with(
                 'https://api-free.deepl.com/v2/translate',
                 [
+                    'headers' => [
+                        'Authorization' => 'DeepL-Auth-Key test-api-key',
+                    ],
                     'form_params' => [
-                        'auth_key' => 'test-api-key',
                         'text' => 'test prompt',
                         'target_lang' => 'DE',
                     ],

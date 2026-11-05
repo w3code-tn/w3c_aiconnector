@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace W3c\W3cAiconnector\Tests\Functional\Factory;
+namespace W3code\W3cAIConnector\Tests\Functional\Factory;
 
 use Exception;
 use PHPUnit\Framework\Attributes\Test;

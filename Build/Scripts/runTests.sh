@@ -113,11 +113,8 @@ handleDbmsOptions() {
 
 getPhpImageVersion() {
     case ${1} in
-        8.2)
-            echo -n "1.12"
-            ;;
-        8.3)
-            echo -n "1.13"
+        8.4)
+            echo -n "1.8"
             ;;
     esac
 }
@@ -182,10 +179,9 @@ Options:
         Hack functional tests into #numberOfChunks pieces and run tests of #chunk.
         Example -c 3/13
 
-    -p <8.2|8.3>
+    -p <8.4>
         Specifies the PHP minor version to be used
-            - 8.2 (default): use PHP 8.2
-            - 8.3: use PHP 8.3
+            - 8.4 (default): use PHP 8.4
 
     -e "<phpunit options>" (DEPRECATED).
         Additional options to send to phpunit.
@@ -204,8 +200,8 @@ Options:
         Show this help.
 
 Examples:
-    # Run functional tests on postgres with xdebug, php 8.3 and execute a restricted set of tests
-    $THIS_SCRIPT_NAME -x -p 8.3 -d postgres -i 12 -- --filter PageActionsTest
+    # Run functional tests on postgres with xdebug, PHP 8.4 and execute a restricted set of tests
+    $THIS_SCRIPT_NAME -x -p 8.4 -d postgres -i 14 -- --filter PageActionsTest
 
     # Run functional tests on postgres 11
     $THIS_SCRIPT_NAME -d postgres -i 11
@@ -256,7 +252,7 @@ CORE_ROOT="${PWD}"
 TEST_SUITE="functional"
 DBMS="sqlite"
 DBMS_VERSION=""
-PHP_VERSION="8.2"
+PHP_VERSION="8.4"
 PHP_XDEBUG_ON=0
 PHP_XDEBUG_PORT=9003
 EXTRA_TEST_OPTIONS=""
@@ -264,7 +260,7 @@ DATABASE_DRIVER=""
 CHUNKS=0
 THISCHUNK=0
 CONTAINER_BIN=""
-COMPOSER_ROOT_VERSION="13.2.x-dev"
+COMPOSER_ROOT_VERSION="14.3.x-dev"
 CONTAINER_SHELL="/bin/sh"
 CONTAINER_INTERACTIVE="-it --init"
 HOST_UID=$(id -u)
@@ -307,7 +303,7 @@ while getopts ":a:b:c:d:i:p:e:xy:h" OPT; do
             ;;
         p)
             PHP_VERSION=${OPTARG}
-            if ! [[ ${PHP_VERSION} =~ ^(8.2|8.3)$ ]]; then
+            if ! [[ ${PHP_VERSION} =~ ^(8.4)$ ]]; then
                 INVALID_OPTIONS+=("${OPTARG}")
             fi
             ;;

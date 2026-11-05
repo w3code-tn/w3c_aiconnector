@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace W3c\W3cAiconnector\Tests\Functional\Client;
+namespace W3code\W3cAIConnector\Tests\Functional\Client;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
