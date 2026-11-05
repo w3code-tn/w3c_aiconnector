@@ -50,7 +50,6 @@ class DeepLClient implements LoggerAwareInterface
         }
 
         $formParams = [
-            'auth_key' => $options['apiKey'],
             'text' => $prompt,
             'target_lang' => $options['target_lang'],
         ];
@@ -82,6 +81,9 @@ class DeepLClient implements LoggerAwareInterface
 
         try {
             return $this->client->post($url, [
+                'headers' => [
+                    'Authorization' => 'DeepL-Auth-Key ' . $options['apiKey'],
+                ],
                 'form_params' => $formParams,
             ]);
         } catch (ClientException $e) {
